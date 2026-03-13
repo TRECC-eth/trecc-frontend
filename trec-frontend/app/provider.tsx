@@ -1,0 +1,40 @@
+'use client';
+
+import React, { type ReactNode } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { WagmiProvider } from 'wagmi';
+import { createAppKit } from '@reown/appkit/react';
+
+// THE FIX: Using the relative path to go up one level and into the config folder
+import { wagmiAdapter, projectId, networks } from '../config/reown';
+
+const queryClient = new QueryClient();
+
+const metadata = {
+  name: 'TREC Protocol',
+  description: 'ERC-8004 AI Agent Lending',
+  url: 'http://localhost:3000',
+  icons: ['https://avatars.githubusercontent.com/u/179229932'],
+};
+
+// Initialize the Reown Modal
+createAppKit({
+    adapters: [wagmiAdapter],
+    projectId,
+    networks,
+    metadata,
+    themeMode: 'dark',
+    features: {
+      analytics: true,
+    },
+  });
+
+export function Providers({ children }: { children: ReactNode }) {
+  return (
+    <WagmiProvider config={wagmiAdapter.wagmiConfig}>
+      <QueryClientProvider client={queryClient}>
+        {children}
+      </QueryClientProvider>
+    </WagmiProvider>
+  );
+}
