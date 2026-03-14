@@ -4,9 +4,14 @@ import React, { useState, useMemo } from 'react';
 import { Liveline } from 'liveline';
 import type { LivelinePoint } from 'liveline';
 
-const SILVER = '#cbd5e1';
 const CHART_PAD_LEFT = 16;
 const CHART_PAD_RIGHT = 64;
+
+const COLOR_UP = '#22c55e';
+const COLOR_DOWN = '#ef4444';
+const COLOR_NEUTRAL = '#ffffff';
+
+const TREND_THRESHOLD_PCT = 0.05;
 
 const WINDOWS = [
   { label: '1H', secs: 3600 },
@@ -40,6 +45,17 @@ function formatTimeLabel(t: number, windowSecs: number): string {
 export default function PortfolioChart({ data, value }: PortfolioChartProps) {
   const [activeWindowSecs, setActiveWindowSecs] = useState(WINDOWS[0].secs);
 
+  const lineColor = useMemo(() => {
+    if (!data.length || data.length < 2) return COLOR_NEUTRAL;
+    const curr = data[data.length - 1].value;
+    const prevIdx = Math.max(0, data.length - 6);
+    const prev = data[prevIdx].value;
+    const pct = prev ? ((curr - prev) / prev) * 100 : 0;
+    if (pct > TREND_THRESHOLD_PCT) return COLOR_UP;
+    if (pct < -TREND_THRESHOLD_PCT) return COLOR_DOWN;
+    return COLOR_NEUTRAL;
+  }, [data]);
+
   const xAxisLabels = useMemo(() => {
     if (!data.length) return [];
     const latestTime = data[data.length - 1].time;
@@ -59,7 +75,7 @@ export default function PortfolioChart({ data, value }: PortfolioChartProps) {
         data={data}
         value={value}
         theme="dark"
-        color={SILVER}
+        color={lineColor}
         fill
         momentum
         showValue
