@@ -32,7 +32,6 @@ function getChainIconUrl(chainId: number): string {
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [activeTab, setActivateTab] = useState('dashboard');
   const [showUsernameModal, setShowUsernameModal] = useState(false);
   const [chainIconError, setChainIconError] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -94,32 +93,32 @@ export default function Navbar() {
       <nav
         className={`
           relative pointer-events-auto flex items-center justify-between w-full max-w-6xl py-3 
-          bg-[#0a0a0a]/80 backdrop-blur-2xl 
-          border border-white/5 rounded-full 
-          shadow-[0_16px_32px_-8px_rgba(0,0,0,0.8)] 
+          /* SOFTENED FROSTED GLASS BACKGROUND */
+          bg-zinc-900/40 backdrop-blur-[32px] saturate-150
+          border border-white/[0.08] rounded-full 
+          shadow-[0_20px_40px_-10px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.1)] 
           transition-all duration-500 ease-out
-          ${isScrolled
-            ? 'bg-black/60 backdrop-blur-xl md:backdrop-blur-2xl px-6'
-            : 'bg-black/40 backdrop-blur-sm px-6 md:px-8 hover:shadow-[0_20px_40px_-8px_rgba(0,0,0,0.9)]'}
+          ${isScrolled ? 'px-6 bg-zinc-900/60' : 'px-6 md:px-8'}
         `}
       >
         {/* Left: Logo Only */}
         <Link href="/" className="flex items-center gap-3 group z-10">
-          <div className="relative group-hover:scale-105 transition-transform">
+          <div className="relative group-hover:scale-105 transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]">
+            <div className="absolute inset-0 bg-white/20 blur-md rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
             <img
               src="/logo.png"
               alt="Logo"
-              className="w-10 h-10 object-contain grayscale group-hover:grayscale-0 transition-all duration-500 drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]"
+              className="relative w-10 h-10 object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
             />
           </div>
         </Link>
 
         {/* Center: Simple Text Links */}
         <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 gap-10 items-center">
-          <Link href="#how-it-works" className="text-sm font-semibold text-zinc-500 hover:text-zinc-200 transition-colors tracking-wide">
+          <Link href="#how-it-works" className="text-sm font-medium text-zinc-300 hover:text-white transition-colors tracking-wide drop-shadow-md">
             How it works
           </Link>
-          <Link href="#docs" className="text-sm font-semibold text-zinc-500 hover:text-zinc-200 transition-colors tracking-wide">
+          <Link href="#docs" className="text-sm font-medium text-zinc-300 hover:text-white transition-colors tracking-wide drop-shadow-md">
             Docs
           </Link>
         </div>
@@ -128,24 +127,24 @@ export default function Navbar() {
         <div className="flex items-center gap-3 z-10">
           {isConnected ? (
             <>
-              {/* Balance Pill */}
+              {/* Balance Pill - Softened Borders */}
               <div
-                className="relative flex items-center gap-2.5 pl-1.5 pr-4 py-1.5 rounded-full bg-zinc-900 border border-zinc-700 text-zinc-300 font-bold text-sm shadow-inner"
+                className="relative flex items-center gap-2.5 pl-2 pr-4 py-1.5 rounded-full bg-gradient-to-b from-zinc-800 to-zinc-950 border border-white/[0.05] text-zinc-200 font-medium text-sm shadow-[inset_0_1px_4px_rgba(0,0,0,0.8),0_1px_1px_rgba(255,255,255,0.05)]"
                 title={balance ? `${formatUnits(balance.value, balance.decimals)} ${balance.symbol}` : undefined}
               >
                 {chainIconError ? (
-                  <span className="relative z-10 flex items-center justify-center w-6 h-6 rounded-full bg-zinc-800 shrink-0">
-                    <Network className="w-3.5 h-3.5 text-zinc-400" />
+                  <span className="relative z-10 flex items-center justify-center w-5 h-5 rounded-full bg-zinc-800 shrink-0 border border-zinc-700 shadow-inner">
+                    <Network className="w-3 h-3 text-zinc-400" />
                   </span>
                 ) : (
                   <img
                     src={getChainIconUrl(chainId)}
                     alt=""
-                    className="relative z-10 w-6 h-6 rounded-full object-cover shrink-0 grayscale opacity-80"
+                    className="relative z-10 w-5 h-5 rounded-full object-cover shrink-0 grayscale opacity-90 border border-zinc-700 shadow-sm"
                     onError={() => setChainIconError(true)}
                   />
                 )}
-                <span className="relative z-10 tracking-wide tabular-nums">
+                <span className="relative z-10 tracking-widest tabular-nums text-[11px] uppercase">
                   {balance
                     ? (() => {
                       const num = Number(formatUnits(balance.value, balance.decimals));
@@ -157,42 +156,60 @@ export default function Navbar() {
                 </span>
               </div>
 
-              {/* Connected Wallet Pill */}
+              {/* Connected Wallet Pill - Soft Machined Transition */}
               <button
                 type="button"
                 onClick={() => openWalletModal?.()}
-                className="flex items-center gap-2.5 pl-1.5 pr-4 py-1.5 rounded-full bg-zinc-900 border border-zinc-600 text-white font-bold hover:bg-zinc-800 transition-colors shadow-[0_2px_10px_rgba(0,0,0,0.5)]"
+                className="
+                  group flex items-center gap-2.5 pl-1.5 pr-4 py-1.5 rounded-full 
+                  bg-gradient-to-b from-zinc-200 via-zinc-400 to-zinc-500
+                  border border-zinc-400/50 ring-1 ring-black/10
+                  text-zinc-900 font-bold hover:from-white hover:via-zinc-300 hover:to-zinc-400 
+                  transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.4),inset_0_2px_3px_rgba(255,255,255,0.8)]
+                "
               >
                 {displayAvatar ? (
-                  <img src={displayAvatar} alt="" className="w-6 h-6 rounded-full object-cover border border-zinc-700" />
+                  <img src={displayAvatar} alt="" className="w-6 h-6 rounded-full object-cover border border-zinc-400 shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]" />
                 ) : (
-                  <div className="w-6 h-6 rounded-full bg-zinc-700" />
+                  <div className="w-6 h-6 rounded-full bg-zinc-800 border border-zinc-500 shadow-inner" />
                 )}
-                <span className="text-sm tracking-wide">
+                <span className="text-xs tracking-wider uppercase [text-shadow:0_1px_0_rgba(255,255,255,0.6)]">
                   {displayId}
                 </span>
               </button>
             </>
           ) : (
 
-            /* --- PURE TAILWIND 3D METALLIC BUTTON (NO DEPENDENCIES) --- */
+            /* --- SOFTENED 3D CHROMIUM BUTTON --- */
             <button
               onClick={() => openWalletModal?.()}
               className="
-                relative px-7 py-3 rounded-full font-extrabold uppercase text-[11px] tracking-[0.15em]
-                text-zinc-800 [text-shadow:0_1px_0_rgba(255,255,255,0.8)]
-                bg-gradient-to-b from-zinc-200 via-zinc-400 to-zinc-500
-                border-t border-t-zinc-100 border-b border-b-zinc-700 border-l border-l-zinc-300 border-r border-r-zinc-300
-                shadow-[0_10px_20px_-5px_rgba(0,0,0,0.9),inset_0_3px_4px_rgba(255,255,255,0.9),inset_0_-4px_6px_rgba(0,0,0,0.4)]
-                hover:from-zinc-100 hover:via-zinc-300 hover:to-zinc-400
-                hover:-translate-y-[1px]
-                hover:shadow-[0_15px_25px_-5px_rgba(0,0,0,0.9),inset_0_3px_5px_rgba(255,255,255,1),inset_0_-4px_6px_rgba(0,0,0,0.3)]
-                active:translate-y-[2px] 
-                active:shadow-[0_2px_5px_-2px_rgba(0,0,0,0.9),inset_0_4px_8px_rgba(0,0,0,0.5)]
-                transition-all duration-200 ease-out
+                group relative px-8 py-3 rounded-full font-black uppercase text-[11px] tracking-[0.2em]
+                text-zinc-800 [text-shadow:0_1px_0_rgba(255,255,255,0.9),0_-1px_0_rgba(0,0,0,0.1)]
+                bg-[linear-gradient(180deg,#ffffff_0%,#e2e2e2_25%,#999999_45%,#d4d4d4_55%,#737373_100%)]
+                
+                /* Replaced harsh borders with subtle rings and translucent borders for anti-aliasing */
+                border border-black/10 ring-1 ring-inset ring-white/30
+                
+                /* Softer, more blended shadows */
+                shadow-[0_15px_25px_-5px_rgba(0,0,0,0.6),inset_0_3px_5px_rgba(255,255,255,0.9),inset_0_-3px_6px_rgba(0,0,0,0.25)]
+                
+                hover:-translate-y-[2px] hover:scale-[1.02]
+                hover:bg-[linear-gradient(180deg,#ffffff_0%,#f5f5f5_25%,#a3a3a3_45%,#e5e5e5_55%,#808080_100%)]
+                hover:shadow-[0_20px_35px_-5px_rgba(0,0,0,0.7),inset_0_4px_6px_rgba(255,255,255,1),inset_0_-3px_6px_rgba(0,0,0,0.2)]
+                
+                active:translate-y-[1px] active:scale-[0.98]
+                active:bg-[linear-gradient(180deg,#e2e2e2_0%,#cccccc_25%,#808080_45%,#b3b3b3_55%,#595959_100%)]
+                active:shadow-[0_5px_10px_-2px_rgba(0,0,0,0.8),inset_0_2px_4px_rgba(0,0,0,0.3),inset_0_-2px_4px_rgba(255,255,255,0.3)]
+                
+                transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)]
+                overflow-hidden
               "
             >
-              Connect Wallet
+              {/* Sweeping Light Glare Effect on Hover */}
+              <div className="absolute top-0 -left-[100%] w-[50%] h-full bg-gradient-to-r from-transparent via-white/80 to-transparent skew-x-[-45deg] group-hover:left-[200%] transition-all duration-1000 ease-in-out pointer-events-none" />
+
+              <span className="relative z-10">Connect Wallet</span>
             </button>
 
           )}
