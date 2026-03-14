@@ -13,11 +13,11 @@ export default function Home() {
   if (!role) {
     return (
       <div className="flex flex-col items-center justify-center flex-grow p-8 relative">
-        {/* Background glow for the premium feel */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-green-600/10 rounded-full blur-[120px] pointer-events-none" />
+        {/* Background glow for the premium feel - Metallic/Neutral */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-slate-500/10 rounded-full blur-[120px] pointer-events-none" />
 
-        <h1 className="text-4xl md:text-6xl font-extrabold mb-4 text-center tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 z-10">
+        <h1 className="text-4xl md:text-6xl font-extrabold mb-4 text-center tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-200 to-slate-500 z-10 drop-shadow-sm">
           Select Your Identity
         </h1>
         <p className="text-slate-400 mb-12 text-center max-w-lg z-10 text-lg">
@@ -28,25 +28,29 @@ export default function Home() {
           {/* LENDER BUTTON */}
           <button 
             onClick={() => setRole('lender')}
-            className="group p-8 rounded-3xl border border-white/10 bg-slate-900/50 backdrop-blur-md hover:bg-slate-800/80 hover:border-blue-500/50 transition-all text-left shadow-2xl"
+            className="group relative p-8 rounded-3xl border border-white/10 bg-gradient-to-b from-neutral-900 to-black backdrop-blur-md hover:border-white/20 hover:shadow-[0_0_30px_-5px_rgba(255,255,255,0.1)] transition-all duration-300 text-left shadow-2xl overflow-hidden"
           >
-            <div className="bg-blue-500/20 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform border border-blue-500/30">
-              <TrendingUp className="text-blue-400" size={32} />
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            
+            <div className="relative z-10 bg-neutral-800/50 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform border border-white/5 group-hover:border-white/20 shadow-inner">
+              <TrendingUp className="text-slate-200" size={32} />
             </div>
-            <h2 className="text-2xl font-bold mb-2 text-white">I am Rahul (Lender)</h2>
-            <p className="text-slate-400">Provide USDC capital to verified AI agents and earn passive yield.</p>
+            <h2 className="relative z-10 text-2xl font-bold mb-2 text-white group-hover:text-slate-200 transition-colors">I am Rahul (Lender)</h2>
+            <p className="relative z-10 text-slate-500 group-hover:text-slate-400 transition-colors">Provide USDC capital to verified AI agents and earn passive yield.</p>
           </button>
 
           {/* BORROWER BUTTON */}
           <button 
             onClick={() => setRole('borrower')}
-            className="group p-8 rounded-3xl border border-white/10 bg-slate-900/50 backdrop-blur-md hover:bg-slate-800/80 hover:border-green-500/50 transition-all text-left shadow-2xl"
+            className="group relative p-8 rounded-3xl border border-white/10 bg-gradient-to-b from-neutral-900 to-black backdrop-blur-md hover:border-white/20 hover:shadow-[0_0_30px_-5px_rgba(255,255,255,0.1)] transition-all duration-300 text-left shadow-2xl overflow-hidden"
           >
-            <div className="bg-green-500/20 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform border border-green-500/30">
-              <Bot className="text-green-400" size={32} />
+             <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+            <div className="relative z-10 bg-neutral-800/50 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform border border-white/5 group-hover:border-white/20 shadow-inner">
+              <Bot className="text-slate-200" size={32} />
             </div>
-            <h2 className="text-2xl font-bold mb-2 text-white">I am Sky (Borrower)</h2>
-            <p className="text-slate-400">Mint your Soulbound ID, build reputation, and command Elsa to trade.</p>
+            <h2 className="relative z-10 text-2xl font-bold mb-2 text-white group-hover:text-slate-200 transition-colors">I am Sky (Borrower)</h2>
+            <p className="relative z-10 text-slate-500 group-hover:text-slate-400 transition-colors">Mint your Soulbound ID, build reputation, and command Elsa to trade.</p>
           </button>
         </div>
       </div>
@@ -58,29 +62,35 @@ export default function Home() {
     <div className="p-4 md:p-8 max-w-5xl mx-auto w-full z-10 relative">
       <button 
         onClick={() => setRole(null)} 
-        className="text-slate-400 hover:text-white mb-8 flex items-center gap-2 transition-colors font-medium bg-white/5 px-4 py-2 rounded-full border border-white/10 hover:bg-white/10 w-fit"
+        className="text-slate-400 hover:text-white mb-8 flex items-center gap-2 transition-colors font-medium bg-neutral-900/50 px-4 py-2 rounded-full border border-white/10 hover:bg-neutral-800 hover:border-white/20 w-fit"
       >
         <ArrowLeft size={18} /> Switch Role
       </button>
 
       {role === 'lender' ? (
         // RAHUL'S VIEW: Just the Vault
-        <div className="p-8 border border-white/10 rounded-3xl bg-slate-900/80 backdrop-blur-xl shadow-2xl flex flex-col items-center">
-          <h2 className="text-3xl font-bold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">
+        <div className="p-8 border border-white/10 rounded-3xl bg-black/40 backdrop-blur-xl shadow-2xl flex flex-col items-center relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
+          <h2 className="relative z-10 text-3xl font-bold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400">
             Liquidity Vault
           </h2>
-          <LenderVault />
+          <div className="relative z-10 w-full">
+            <LenderVault />
+          </div>
         </div>
       ) : (
         // SKY'S VIEW: Registry + Elsa Chat Terminal
         <div className="w-full flex flex-col gap-8">
           {/* Identity Section */}
-          <div className="p-8 border border-white/10 rounded-3xl bg-slate-900/80 backdrop-blur-xl shadow-2xl flex flex-col items-center">
-            <h2 className="text-3xl font-bold mb-2 text-center text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-600">
+          <div className="p-8 border border-white/10 rounded-3xl bg-black/40 backdrop-blur-xl shadow-2xl flex flex-col items-center relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
+            <h2 className="relative z-10 text-3xl font-bold mb-2 text-center text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400">
               Agent Identity
             </h2>
-            <p className="text-slate-400 mb-8">Mint your ERC-8004 Soulbound NFT to establish your on-chain credit score.</p>
-            <AgentRegistry />
+            <p className="relative z-10 text-slate-400 mb-8">Mint your ERC-8004 Soulbound NFT to establish your on-chain credit score.</p>
+            <div className="relative z-10 w-full">
+              <AgentRegistry />
+            </div>
           </div>
 
           {/* Action Section (The Brain) */}

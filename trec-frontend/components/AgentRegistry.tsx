@@ -38,7 +38,7 @@ export default function AgentRegistry() {
   // STATE: Not Connected
   if (!isConnected) {
     return (
-      <div className="text-center p-8 bg-white/5 rounded-3xl border border-dashed border-white/20">
+      <div className="text-center p-8 bg-black/40 rounded-3xl border border-dashed border-white/10 backdrop-blur-sm">
         <p className="text-slate-400">Connect your wallet to begin Agent Onboarding.</p>
       </div>
     );
@@ -48,18 +48,18 @@ export default function AgentRegistry() {
   if (isSuccess) {
     return (
       <div className="w-full max-w-md animate-in zoom-in-95 duration-500">
-        <div className="relative p-8 rounded-[2rem] bg-gradient-to-br from-slate-900 to-black border border-emerald-500/30 shadow-[0_0_50px_rgba(16,185,129,0.1)] overflow-hidden">
+        <div className="relative p-8 rounded-[2rem] bg-gradient-to-br from-neutral-900 to-black border border-white/10 shadow-[0_0_50px_rgba(255,255,255,0.05)] overflow-hidden">
           {/* Holographic effect */}
-          <div className="absolute -top-24 -right-24 w-48 h-48 bg-emerald-500/20 rounded-full blur-[80px]" />
+          <div className="absolute -top-24 -right-24 w-48 h-48 bg-white/5 rounded-full blur-[80px]" />
           
           <div className="relative z-10">
             <div className="flex justify-between items-start mb-12">
-              <div className="p-3 bg-emerald-500/20 rounded-2xl border border-emerald-500/30">
-                <ShieldCheck className="text-emerald-400" size={28} />
+              <div className="p-3 bg-white/5 rounded-2xl border border-white/10">
+                <ShieldCheck className="text-slate-200" size={28} />
               </div>
               <div className="text-right">
-                <p className="text-[10px] uppercase tracking-widest text-emerald-500 font-bold">ERC-8004 Certified</p>
-                <p className="text-xs text-slate-500 font-mono">ID: #0001</p>
+                <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">ERC-8004 Certified</p>
+                <p className="text-xs text-slate-600 font-mono">ID: #0001</p>
               </div>
             </div>
 
@@ -76,13 +76,13 @@ export default function AgentRegistry() {
               <div>
                 <p className="text-[10px] text-slate-500 uppercase font-bold mb-1">KYC Status</p>
                 <p className="text-emerald-400 text-sm font-bold flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Verified
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_5px_rgba(16,185,129,0.8)]"></span> Verified
                 </p>
               </div>
             </div>
           </div>
         </div>
-        <p className="text-center text-slate-500 text-xs mt-4">This identity is Soulbound and non-transferable.</p>
+        <p className="text-center text-slate-600 text-xs mt-4">This identity is Soulbound and non-transferable.</p>
       </div>
     );
   }
@@ -91,7 +91,7 @@ export default function AgentRegistry() {
   return (
     <div className="w-full max-w-md space-y-6">
       <div className="space-y-2">
-        <label className="text-sm font-medium text-slate-300 ml-1">Preferred Agent Name</label>
+        <label className="text-sm font-medium text-slate-400 ml-1">Preferred Agent Name</label>
         <div className="relative">
           <input 
             type="text" 
@@ -99,7 +99,7 @@ export default function AgentRegistry() {
             value={ensName}
             onChange={(e) => setEnsName(e.target.value)}
             disabled={isMinting || isConfirming}
-            className="w-full bg-slate-900/50 border border-white/10 rounded-2xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all"
+            className="w-full bg-black/50 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-white/20 focus:border-white/30 transition-all"
           />
         </div>
       </div>
@@ -107,7 +107,7 @@ export default function AgentRegistry() {
       <button 
         onClick={handleRegister}
         disabled={!ensName || isMinting || isConfirming}
-        className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-green-900/20 flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50"
+        className="w-full bg-white hover:bg-slate-200 text-black font-bold py-4 rounded-2xl shadow-[0_0_20px_rgba(255,255,255,0.1)] flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50 disabled:shadow-none"
       >
         {isMinting || isConfirming ? (
           <>
@@ -126,7 +126,7 @@ export default function AgentRegistry() {
         <a 
           href={`https://sepolia.basescan.org/tx/${hash}`} 
           target="_blank" 
-          className="block text-center text-xs text-blue-400 hover:underline"
+          className="block text-center text-xs text-slate-500 hover:text-white hover:underline transition-colors"
         >
           View Transaction on Basescan
         </a>
