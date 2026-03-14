@@ -3,7 +3,11 @@
 import React, { useState } from 'react';
 import { Wallet, ArrowDownCircle, Loader2 } from 'lucide-react';
 
-export default function LenderVault() {
+interface LenderVaultProps {
+  onDepositSuccess?: () => void;
+}
+
+export default function LenderVault({ onDepositSuccess }: LenderVaultProps) {
   const [amount, setAmount] = useState('');
   const [isDepositing, setIsDepositing] = useState(false);
 
@@ -16,6 +20,7 @@ export default function LenderVault() {
     setTimeout(() => {
       setIsDepositing(false);
       console.log("Simulated Deposit for:", amount, "USDC");
+      onDepositSuccess?.();
     }, 2000);
   };
 
@@ -26,7 +31,7 @@ export default function LenderVault() {
           <p className="text-sm text-slate-400 mb-1">Protocol TVL</p>
           <p className="text-3xl font-mono font-bold text-white">$1,250,000</p>
         </div>
-        <div className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full text-sm font-semibold shadow-[0_0_10px_rgba(16,185,129,0.2)]">
+        <div className="bg-white/10 text-slate-300 border border-white/20 px-3 py-1 rounded-full text-sm font-semibold">
           10% APY
         </div>
       </div>

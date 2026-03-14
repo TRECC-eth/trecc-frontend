@@ -1,13 +1,39 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { TrendingUp, Bot, ArrowLeft } from 'lucide-react';
 import AgentRegistry from '../components/AgentRegistry';
 import LenderVault from '../components/LenderVault';
-import ElsaChat from '../components/ElsaChat'; // <-- Imported our new Brain!
+import FundAgent from '../components/FundAgent';
 
 export default function Home() {
+  const router = useRouter();
   const [role, setRole] = useState<'lender' | 'borrower' | null>(null);
+  const [hasProvidedLiquidity, setHasProvidedLiquidity] = useState(false);
+  const [agentCreated, setAgentCreated] = useState(false);
+  const [hasFundedAgent, setHasFundedAgent] = useState(false);
+
+  const handleDepositSuccess = useCallback(() => {
+    setHasProvidedLiquidity(true);
+    router.push('/dashboard/lender');
+  }, [router]);
+
+  const handleFundSuccess = useCallback(() => {
+    setHasFundedAgent(true);
+    router.push('/dashboard/borrower');
+  }, [router]);
+
+  const handleSwitchRole = useCallback(() => {
+    setRole(null);
+    setHasProvidedLiquidity(false);
+    setAgentCreated(false);
+    setHasFundedAgent(false);
+  }, []);
+
+  useEffect(() => {
+    if (agentCreated && hasFundedAgent && role === 'borrower') router.push('/dashboard/borrower');
+  }, [agentCreated, hasFundedAgent, role, router]);
 
   // STATE 1: Choose Identity
   if (!role) {
@@ -61,40 +87,54 @@ export default function Home() {
   return (
     <div className="p-4 md:p-8 max-w-5xl mx-auto w-full z-10 relative">
       <button 
-        onClick={() => setRole(null)} 
+        onClick={handleSwitchRole} 
         className="text-slate-400 hover:text-white mb-8 flex items-center gap-2 transition-colors font-medium bg-neutral-900/50 px-4 py-2 rounded-full border border-white/10 hover:bg-neutral-800 hover:border-white/20 w-fit"
       >
         <ArrowLeft size={18} /> Switch Role
       </button>
 
       {role === 'lender' ? (
-        // RAHUL'S VIEW: Just the Vault
+        // LENDER: Provide liquidity then redirect to /dashboard/lender
         <div className="p-8 border border-white/10 rounded-3xl bg-black/40 backdrop-blur-xl shadow-2xl flex flex-col items-center relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
-          <h2 className="relative z-10 text-3xl font-bold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400">
+          <h2 className="relative z-10 text-3xl font-bold mb-2 text-center text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400">
             Liquidity Vault
           </h2>
+          <p className="relative z-10 text-slate-400 mb-8">Provide USDC to start earning yield. You will be taken to your dashboard after your first deposit.</p>
           <div className="relative z-10 w-full">
-            <LenderVault />
+            <LenderVault onDepositSuccess={handleDepositSuccess} />
           </div>
         </div>
       ) : (
-        // SKY'S VIEW: Registry + Elsa Chat Terminal
+        // BORROWER: Step 1 → Agent, Step 2 → Fund $100+, Step 3 → Dashboard + Elsa
         <div className="w-full flex flex-col gap-8">
-          {/* Identity Section */}
-          <div className="p-8 border border-white/10 rounded-3xl bg-black/40 backdrop-blur-xl shadow-2xl flex flex-col items-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
-            <h2 className="relative z-10 text-3xl font-bold mb-2 text-center text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400">
-              Agent Identity
-            </h2>
-            <p className="relative z-10 text-slate-400 mb-8">Mint your ERC-8004 Soulbound NFT to establish your on-chain credit score.</p>
-            <div className="relative z-10 w-full">
-              <AgentRegistry />
-            </div>
-          </div>
-
-          {/* Action Section (The Brain) */}
-          <ElsaChat />
+          {!agentCreated ? (
+            <>
+              <div className="p-8 border border-white/10 rounded-3xl bg-black/40 backdrop-blur-xl shadow-2xl flex flex-col items-center relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
+                <h2 className="relative z-10 text-3xl font-bold mb-2 text-center text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400">
+                  Agent Identity
+                </h2>
+                <p className="relative z-10 text-slate-400 mb-8">Mint your ERC-8004 Soulbound NFT. Then fund your agent with at least $100 to access your dashboard.</p>
+                <div className="relative z-10 w-full">
+                  <AgentRegistry onAgentMinted={() => setAgentCreated(true)} />
+                </div>
+              </div>
+            </>
+          ) : !hasFundedAgent ? (
+            <>
+              <div className="p-8 border border-white/10 rounded-3xl bg-black/40 backdrop-blur-xl shadow-2xl flex flex-col items-center relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
+                <h2 className="relative z-10 text-3xl font-bold mb-2 text-center text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400">
+                  Fund Your Agent
+                </h2>
+                <p className="relative z-10 text-slate-400 mb-8">Add at least $100 USD to your agent. You will be taken to your dashboard after funding.</p>
+                <div className="relative z-10 w-full">
+                  <FundAgent onFundSuccess={handleFundSuccess} />
+                </div>
+              </div>
+            </>
+          ) : null}
         </div>
       )}
     </div>

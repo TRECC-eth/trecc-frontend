@@ -110,12 +110,13 @@ export default function Navbar() {
       <nav
         className={`
           relative pointer-events-auto flex items-center justify-between w-full max-w-6xl py-2.5 
-          bg-black/80 backdrop-blur-2xl 
           border border-white/10 rounded-full 
           shadow-[0_16px_32px_-8px_rgba(0,0,0,0.8)] 
           shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]
           transition-all duration-500 ease-out
-          ${isScrolled ? 'px-6' : 'px-6 md:px-8 hover:shadow-[0_20px_40px_-8px_rgba(0,0,0,0.9)]'}
+          ${isScrolled 
+            ? 'bg-black/60 backdrop-blur-xl md:backdrop-blur-2xl px-6' 
+            : 'bg-black/40 backdrop-blur-sm px-6 md:px-8 hover:shadow-[0_20px_40px_-8px_rgba(0,0,0,0.9)]'}
         `}
       >
 
