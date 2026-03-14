@@ -1,100 +1,220 @@
 'use client';
 
-import React, { useState } from 'react';
-import { TrendingUp, Bot, ArrowLeft } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { TrendingUp, Bot, ArrowLeft, ArrowRight } from 'lucide-react';
 import AgentRegistry from '../components/AgentRegistry';
 import LenderVault from '../components/LenderVault';
-import ElsaChat from '../components/ElsaChat'; // <-- Imported our new Brain!
+import ElsaChat from '../components/ElsaChat';
 
 export default function Home() {
   const [role, setRole] = useState<'lender' | 'borrower' | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(false);
+  const [bootText, setBootText] = useState('');
 
-  // STATE 1: Choose Identity
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const handleRoleSelection = (selectedRole: 'lender' | 'borrower') => {
+    setRole(selectedRole);
+    setIsInitializing(true);
+
+    const stages = selectedRole === 'lender' 
+      ? [
+          "Authenticating Institutional Credentials...",
+          "Establishing Secure RPC Tunnel...",
+          "Verifying Vault Cryptography...",
+          "Unlocking Liquidity Protocol..."
+        ]
+      : [
+          "Provisioning Autonomous Agent...",
+          "Generating ERC-8004 Soulbound Parameters...",
+          "Connecting to BitGo MPC Nodes...",
+          "Initializing Elsa Neural Link..."
+        ];
+
+    let currentStage = 0;
+    setBootText(stages[0]);
+
+    const interval = setInterval(() => {
+      currentStage++;
+      if (currentStage < stages.length) {
+        setBootText(stages[currentStage]);
+      } else {
+        clearInterval(interval);
+        setTimeout(() => setIsInitializing(false), 500); 
+      }
+    }, 700); 
+  };
+
+  // STATE 1: System Initialization (The Hub)
   if (!role) {
     return (
-      <div className="flex flex-col items-center justify-center flex-grow p-8 relative">
-        {/* Background glow for the premium feel - Metallic/Neutral */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-slate-500/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className={`flex flex-col items-center justify-center flex-grow p-4 md:p-8 relative min-h-[90vh] bg-black transition-opacity duration-1000 ease-in-out ${mounted ? 'opacity-100' : 'opacity-0'}`}>
+        
+        {/* Studio Lighting */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-white/[0.03] rounded-[100%] blur-[100px] pointer-events-none" />
+        
+        <div className="relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        
+        </div>
 
-        <h1 className="text-4xl md:text-6xl font-extrabold mb-4 text-center tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-200 to-slate-500 z-10 drop-shadow-sm">
-          Select Your Identity
-        </h1>
-        <p className="text-slate-400 mb-12 text-center max-w-lg z-10 text-lg">
-          Are you depositing liquidity to earn yield, or minting an ERC-8004 Agent to execute trades?
+        <div className="relative z-10 text-center mb-8 animate-in slide-in-from-bottom-6 duration-1000 delay-150 fade-in">
+          <h1 className="
+            text-5xl md:text-7xl lg:text-[5.5rem] font-medium tracking-tight leading-tight
+            text-transparent bg-clip-text 
+            bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_40%,#8c8c8c_55%,#3a3a3a_100%)]
+            drop-shadow-[0_2px_10px_rgba(255,255,255,0.05)]
+          ">
+            Liquidity Made Simple
+          </h1>
+        </div>
+
+        <p className="text-zinc-500 mb-16 text-center max-w-lg z-10 text-base md:text-lg font-light tracking-wide leading-relaxed animate-in slide-in-from-bottom-6 duration-1000 delay-300 fade-in">
+          Establish secure connection to the prime brokerage infrastructure. Provide liquidity, or mint an autonomous agent to execute operations.
         </p>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl z-10">
-          {/* LENDER BUTTON */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl z-10 animate-in slide-in-from-bottom-8 duration-1000 delay-500 fade-in">
+          
+          {/* LENDER: 3D CHROMIUM MODEL CARD */}
           <button 
-            onClick={() => setRole('lender')}
-            className="group relative p-8 rounded-3xl border border-white/10 bg-gradient-to-b from-neutral-900 to-black backdrop-blur-md hover:border-white/20 hover:shadow-[0_0_30px_-5px_rgba(255,255,255,0.1)] transition-all duration-300 text-left shadow-2xl overflow-hidden"
+            onClick={() => handleRoleSelection('lender')}
+            className="
+              group relative p-10 rounded-[2.5rem] text-left transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]
+              /* The Base Chromium Surface Reflection */
+              bg-[linear-gradient(160deg,#242429_0%,#0c0c0e_40%,#000000_50%,#0f0f13_60%,#1e1e24_100%)]
+              /* Laser-cut edges */
+              border border-white/[0.1] border-t-white/[0.25] border-b-black
+              /* Thick physical 3D shadow and bevel */
+              shadow-[0_30px_60px_-15px_rgba(0,0,0,1),inset_0_2px_4px_rgba(255,255,255,0.2),inset_0_-4px_8px_rgba(0,0,0,0.8)]
+              /* The 3D Hover Transfer */
+              hover:-translate-y-3 hover:scale-[1.02]
+              hover:shadow-[0_50px_80px_-20px_rgba(0,0,0,1),inset_0_3px_6px_rgba(255,255,255,0.3),inset_0_-4px_8px_rgba(0,0,0,0.8)]
+              overflow-hidden
+            "
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            {/* The Specular Highlight (The top bright reflection of the 3D model) */}
+            <div className="absolute inset-0 bg-gradient-to-b from-white/[0.07] to-transparent h-[45%] pointer-events-none group-hover:from-white/[0.12] transition-colors duration-700" />
             
-            <div className="relative z-10 bg-neutral-800/50 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform border border-white/5 group-hover:border-white/20 shadow-inner">
-              <TrendingUp className="text-slate-200" size={32} />
+            {/* Internal Glow on Hover */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.05),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+
+            {/* The "Engraved" Icon Box */}
+            <div className="relative z-10 w-16 h-16 rounded-2xl flex items-center justify-center mb-8 bg-black border border-white/[0.05] shadow-[inset_0_2px_8px_rgba(0,0,0,0.8),0_1px_1px_rgba(255,255,255,0.1)] group-hover:shadow-[inset_0_2px_12px_rgba(0,0,0,1),0_1px_2px_rgba(255,255,255,0.2)] transition-all duration-500">
+              <TrendingUp className="text-zinc-300 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]" size={28} strokeWidth={1.5} />
             </div>
-            <h2 className="relative z-10 text-2xl font-bold mb-2 text-white group-hover:text-slate-200 transition-colors">I am Rahul (Lender)</h2>
-            <p className="relative z-10 text-slate-500 group-hover:text-slate-400 transition-colors">Provide USDC capital to verified AI agents and earn passive yield.</p>
+            
+            <h2 className="relative z-10 text-2xl font-medium mb-3 text-transparent bg-clip-text bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_40%,#999999_100%)] tracking-tight flex items-center justify-between group-hover:bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_60%,#cccccc_100%)] transition-all duration-500">
+              Capital Provider
+              <ArrowRight className="text-zinc-600 group-hover:text-zinc-200 transition-colors group-hover:translate-x-1 duration-500" strokeWidth={1.5} />
+            </h2>
+            <p className="relative z-10 text-zinc-500 text-sm leading-relaxed font-light group-hover:text-zinc-400 transition-colors duration-500">
+              Deploy capital into the high-yield vault. Earn passive, risk-adjusted returns generated by mathematically verified AI agents.
+            </p>
           </button>
 
-          {/* BORROWER BUTTON */}
+          {/* BORROWER: 3D CHROMIUM MODEL CARD */}
           <button 
-            onClick={() => setRole('borrower')}
-            className="group relative p-8 rounded-3xl border border-white/10 bg-gradient-to-b from-neutral-900 to-black backdrop-blur-md hover:border-white/20 hover:shadow-[0_0_30px_-5px_rgba(255,255,255,0.1)] transition-all duration-300 text-left shadow-2xl overflow-hidden"
+            onClick={() => handleRoleSelection('borrower')}
+            className="
+              group relative p-10 rounded-[2.5rem] text-left transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]
+              /* The Base Chromium Surface Reflection */
+              bg-[linear-gradient(160deg,#242429_0%,#0c0c0e_40%,#000000_50%,#0f0f13_60%,#1e1e24_100%)]
+              /* Laser-cut edges */
+              border border-white/[0.1] border-t-white/[0.25] border-b-black
+              /* Thick physical 3D shadow and bevel */
+              shadow-[0_30px_60px_-15px_rgba(0,0,0,1),inset_0_2px_4px_rgba(255,255,255,0.2),inset_0_-4px_8px_rgba(0,0,0,0.8)]
+              /* The 3D Hover Transfer */
+              hover:-translate-y-3 hover:scale-[1.02]
+              hover:shadow-[0_50px_80px_-20px_rgba(0,0,0,1),inset_0_3px_6px_rgba(255,255,255,0.3),inset_0_-4px_8px_rgba(0,0,0,0.8)]
+              overflow-hidden
+            "
           >
-             <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            {/* The Specular Highlight (The top bright reflection of the 3D model) */}
+            <div className="absolute inset-0 bg-gradient-to-b from-white/[0.07] to-transparent h-[45%] pointer-events-none group-hover:from-white/[0.12] transition-colors duration-700" />
+            
+            {/* Internal Glow on Hover */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.05),transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
 
-            <div className="relative z-10 bg-neutral-800/50 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform border border-white/5 group-hover:border-white/20 shadow-inner">
-              <Bot className="text-slate-200" size={32} />
+            {/* The "Engraved" Icon Box */}
+            <div className="relative z-10 w-16 h-16 rounded-2xl flex items-center justify-center mb-8 bg-black border border-white/[0.05] shadow-[inset_0_2px_8px_rgba(0,0,0,0.8),0_1px_1px_rgba(255,255,255,0.1)] group-hover:shadow-[inset_0_2px_12px_rgba(0,0,0,1),0_1px_2px_rgba(255,255,255,0.2)] transition-all duration-500">
+              <Bot className="text-zinc-300 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]" size={28} strokeWidth={1.5} />
             </div>
-            <h2 className="relative z-10 text-2xl font-bold mb-2 text-white group-hover:text-slate-200 transition-colors">I am Sky (Borrower)</h2>
-            <p className="relative z-10 text-slate-500 group-hover:text-slate-400 transition-colors">Mint your Soulbound ID, build reputation, and command Elsa to trade.</p>
+            
+            <h2 className="relative z-10 text-2xl font-medium mb-3 text-transparent bg-clip-text bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_40%,#999999_100%)] tracking-tight flex items-center justify-between group-hover:bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_60%,#cccccc_100%)] transition-all duration-500">
+              Autonomous Agent
+              <ArrowRight className="text-zinc-600 group-hover:text-zinc-200 transition-colors group-hover:translate-x-1 duration-500" strokeWidth={1.5} />
+            </h2>
+            <p className="relative z-10 text-zinc-500 text-sm leading-relaxed font-light group-hover:text-zinc-400 transition-colors duration-500">
+              Mint your ERC-8004 identity. Establish operational parameters, build reputation, and command Elsa to execute on-chain.
+            </p>
           </button>
         </div>
       </div>
     );
   }
 
-  // STATE 2: Active Dashboard
+  // STATE 1.5: The Boot Sequence (The cinematic loading screen)
+  if (isInitializing) {
+    return (
+      <div className="flex flex-col items-center justify-center flex-grow min-h-[90vh] bg-black animate-in fade-in duration-500">
+        <div className="w-12 h-12 border border-zinc-800 border-t-zinc-300 rounded-full animate-spin mb-8" />
+        <p className="text-zinc-400 font-mono text-xs uppercase tracking-[0.2em] animate-pulse">
+          {bootText}
+        </p>
+      </div>
+    );
+  }
+
+  // STATE 2: Active Dashboard (The Protocol View)
   return (
-    <div className="p-4 md:p-8 max-w-5xl mx-auto w-full z-10 relative">
+    <div className="p-4 md:p-8 max-w-[1000px] mx-auto w-full z-10 relative animate-in fade-in duration-1000 ease-out mt-12">
+      
       <button 
         onClick={() => setRole(null)} 
-        className="text-slate-400 hover:text-white mb-8 flex items-center gap-2 transition-colors font-medium bg-neutral-900/50 px-4 py-2 rounded-full border border-white/10 hover:bg-neutral-800 hover:border-white/20 w-fit"
+        className="
+          mb-10 flex items-center gap-2 font-medium text-xs tracking-[0.1em]
+          text-zinc-500 hover:text-zinc-200 transition-colors duration-300
+        "
       >
-        <ArrowLeft size={18} /> Switch Role
+        <ArrowLeft size={14} strokeWidth={1.5} /> TERMINATE SESSION
       </button>
 
       {role === 'lender' ? (
-        // RAHUL'S VIEW: Just the Vault
-        <div className="p-8 border border-white/10 rounded-3xl bg-black/40 backdrop-blur-xl shadow-2xl flex flex-col items-center relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
-          <h2 className="relative z-10 text-3xl font-bold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400">
+        <div className="
+          p-10 md:p-14 rounded-[2rem] relative
+          bg-[#030303] border border-white/[0.08]
+          shadow-[0_20px_50px_-10px_rgba(0,0,0,1),inset_0_1px_0_rgba(255,255,255,0.02)]
+        ">
+          <h2 className="text-3xl font-medium mb-10 text-transparent bg-clip-text bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_40%,#8c8c8c_100%)] tracking-tight">
             Liquidity Vault
           </h2>
-          <div className="relative z-10 w-full">
+          <div className="w-full">
             <LenderVault />
           </div>
         </div>
       ) : (
-        // SKY'S VIEW: Registry + Elsa Chat Terminal
-        <div className="w-full flex flex-col gap-8">
-          {/* Identity Section */}
-          <div className="p-8 border border-white/10 rounded-3xl bg-black/40 backdrop-blur-xl shadow-2xl flex flex-col items-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
-            <h2 className="relative z-10 text-3xl font-bold mb-2 text-center text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400">
+        <div className="w-full flex flex-col gap-10">
+          <div className="
+            p-10 md:p-14 rounded-[2rem] relative flex flex-col items-start
+            bg-[#030303] border border-white/[0.08]
+            shadow-[0_20px_50px_-10px_rgba(0,0,0,1),inset_0_1px_0_rgba(255,255,255,0.02)]
+          ">
+            <h2 className="text-3xl font-medium mb-2 text-transparent bg-clip-text bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_40%,#8c8c8c_100%)] tracking-tight">
               Agent Identity
             </h2>
-            <p className="relative z-10 text-slate-400 mb-8">Mint your ERC-8004 Soulbound NFT to establish your on-chain credit score.</p>
-            <div className="relative z-10 w-full">
+            <p className="text-zinc-500 mb-10 font-light text-sm tracking-wide">
+              Establish your core identity and on-chain credit parameters.
+            </p>
+            <div className="w-full">
               <AgentRegistry />
             </div>
           </div>
 
-          {/* Action Section (The Brain) */}
-          <ElsaChat />
+          <div className="drop-shadow-2xl">
+            <ElsaChat />
+          </div>
         </div>
       )}
     </div>
