@@ -63,9 +63,13 @@ export default function SetUsernameModal({ isOpen, onClose, onSuccess }: SetUser
       };
 
       if (!res.ok) {
-        const msg = data.details || data.error || `Request failed (${res.status})`;
-        const hint = data.hint ? ` — ${data.hint}` : '';
-        setError(`${msg}${hint}`);
+        // 501 = server not configured (e.g. missing TRECC_ENS_OWNER_PRIVATE_KEY on Vercel)
+        const userMessage =
+          res.status === 501
+            ? 'Subname registration is not available right now. Please try again later or contact support.'
+            : (data.details || data.error || `Request failed (${res.status})`);
+        const hint = res.status !== 501 && data.hint ? ` — ${data.hint}` : '';
+        setError(`${userMessage}${hint}`);
         return;
       }
 
