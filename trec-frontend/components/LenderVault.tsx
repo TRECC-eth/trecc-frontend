@@ -1,21 +1,24 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Wallet, ArrowDownCircle, Loader2 } from 'lucide-react';
 
 export default function LenderVault() {
   const [amount, setAmount] = useState('');
   const [isDepositing, setIsDepositing] = useState(false);
+  const router = useRouter();
 
   const handleDeposit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount) return;
     setIsDepositing(true);
-    
+
     // We will plug in the wagmi writeContract hook here later
     setTimeout(() => {
       setIsDepositing(false);
       console.log("Simulated Deposit for:", amount, "USDC");
+      router.push('/dashboard/lender');
     }, 2000);
   };
 

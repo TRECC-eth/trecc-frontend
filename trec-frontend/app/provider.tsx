@@ -13,7 +13,7 @@ const queryClient = new QueryClient();
 const metadata = {
   name: 'TREC Protocol',
   description: 'ERC-8004 AI Agent Lending',
-  url: 'http://localhost:3000',
+  url: 'http://trecc.vercel.app',
   icons: ['https://avatars.githubusercontent.com/u/179229932'],
 };
 
