@@ -3,7 +3,6 @@ import { BitGo } from 'bitgo';
 
 // ---------------------------------------------------------
 // THE TREC RISK ENGINE (OVERWATCH AI)
-// Only allow Elsa to interact with these verified contracts
 // ---------------------------------------------------------
 const APPROVED_PROTOCOLS = [
   "0x173b126de51f353a0c7bbb38035f5796da41c529", // Mock USDC
@@ -20,7 +19,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing transaction parameters" }, { status: 400 });
     }
 
-    // --- STEP 1: AI RISK ASSESSMENT ---
+    // --- 1. AI RISK ASSESSMENT ---
     console.log(`TREC Risk Engine evaluating target contract: ${to}`);
     if (!APPROVED_PROTOCOLS.includes(to.toLowerCase())) {
       console.error(`🚨 SECURITY ALERT: Attempted to interact with unverified contract: ${to}`);
@@ -30,15 +29,16 @@ export async function POST(req: Request) {
       }, { status: 403 });
     }
     
-    // --- STEP 2: BITGO MPC EXECUTION ---
+    // --- 2. BITGO MPC EXECUTION ---
     const bitgo = new BitGo({ env: 'test' });
     bitgo.authenticateWithAccessToken({ accessToken: process.env.BITGO_ACCESS_TOKEN as string });
     
+    // Using 'teth' for testnet Ethereum
     const wallet = await bitgo.coin('teth').wallets().get({ id: process.env.BITGO_WALLET_ID as string });
 
     console.log("Elsa is executing transaction via BitGo MPC...");
     
-    // THE FIX: The passphrase is now securely passed inside the send parameters
+    // Send the transaction (Passphrase is passed securely here)
     const transaction = await wallet.send({
       address: to,
       amount: value || '0', 
@@ -55,6 +55,6 @@ export async function POST(req: Request) {
 
   } catch (error: any) {
     console.error("BitGo Execution Error:", error.message || error);
-    return NextResponse.json({ success: false, error: 'Execution failed.' }, { status: 500 });
+    return NextResponse.json({ success: false, error: error.message || 'Execution failed.' }, { status: 500 });
   }
 }
