@@ -23,7 +23,7 @@ export default function Navbar() {
 
   return (
     <div className="fixed top-6 left-0 right-0 z-50 flex justify-center w-full pointer-events-none px-4 md:px-8">
-      <nav 
+      <nav
         className={`
           relative pointer-events-auto flex items-center justify-between w-full max-w-6xl py-2.5 
           bg-slate-900/60 backdrop-blur-2xl 
@@ -34,14 +34,14 @@ export default function Navbar() {
           ${isScrolled ? 'px-6' : 'px-6 md:px-8 hover:shadow-[0_20px_40px_-8px_rgba(0,0,0,0.6)]'}
         `}
       >
-        
+
         {/* Left: Custom Logo + Text */}
         <Link href="/" className="flex items-center gap-3 group z-10">
           <div className="relative group-hover:scale-105 transition-transform drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">
             <img src="/logo.png" alt="TREC Logo" className="w-9 h-9 object-contain" />
           </div>
           <span className="text-xl font-bold tracking-tight text-white hidden sm:block">
-            TREC
+            TRECC
           </span>
         </Link>
 
@@ -49,12 +49,12 @@ export default function Navbar() {
         <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
           {/* Inner pill container */}
           <div className="flex items-center bg-black/40 p-1 rounded-full border border-white/5 relative">
-            
+
             {/* The Sliding 3D Glass Background */}
-            <div 
+            <div
               className="absolute left-1 top-1 bottom-1 w-28 bg-gradient-to-b from-white/15 to-white/5 rounded-full border border-white/20 shadow-[0_4px_12px_rgba(0,0,0,0.3)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)] backdrop-blur-md transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
-              style={{ 
-                transform: `translateX(${tabs.findIndex(t => t.id === activeTab) * 100}%)` 
+              style={{
+                transform: `translateX(${tabs.findIndex(t => t.id === activeTab) * 100}%)`
               }}
             />
 
@@ -63,12 +63,11 @@ export default function Navbar() {
               const isActive = activeTab === tab.id;
               const Icon = tab.icon;
               return (
-                <button 
+                <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`relative z-10 w-28 flex items-center justify-center gap-2 py-2 rounded-full text-sm font-medium transition-colors duration-300 ${
-                    isActive ? 'text-white drop-shadow-md' : 'text-slate-400 hover:text-slate-200'
-                  }`}
+                  className={`relative z-10 w-28 flex items-center justify-center gap-2 py-2 rounded-full text-sm font-medium transition-colors duration-300 ${isActive ? 'text-white drop-shadow-md' : 'text-slate-400 hover:text-slate-200'
+                    }`}
                 >
                   <Icon size={16} /> <span>{tab.label}</span>
                 </button>
