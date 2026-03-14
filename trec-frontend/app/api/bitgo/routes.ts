@@ -32,18 +32,19 @@ export async function POST(req: Request) {
     
     // --- STEP 2: BITGO MPC EXECUTION ---
     const bitgo = new BitGo({ env: 'test' });
-    bitgo.authenticateWithAccessToken({ accessToken: process.env.BITGO_ACCESS_TOKEN });
+    bitgo.authenticateWithAccessToken({ accessToken: process.env.BITGO_ACCESS_TOKEN as string });
     
-    // Using 'teth' for testnet
     const wallet = await bitgo.coin('teth').wallets().get({ id: process.env.BITGO_WALLET_ID as string });
-    await wallet.unlock({ passphrase: process.env.BITGO_WALLET_PASSPHRASE as string });
 
     console.log("Elsa is executing transaction via BitGo MPC...");
+    
+    // THE FIX: The passphrase is now securely passed inside the send parameters
     const transaction = await wallet.send({
       address: to,
       amount: value || '0', 
       type: 'contractCall',
       data: data,
+      walletPassphrase: process.env.BITGO_WALLET_PASSPHRASE as string 
     });
 
     return NextResponse.json({ 
