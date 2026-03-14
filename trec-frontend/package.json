@@ -2,6 +2,9 @@
   "name": "trec-frontend",
   "version": "0.1.0",
   "private": true,
+  "overrides": {
+    "@wagmi/connectors": "6.2.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -19,7 +22,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "viem": "^2.47.2",
-    "wagmi": "^3.5.0"
+    "wagmi": "2.19.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

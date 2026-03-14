@@ -6,7 +6,7 @@ import { WagmiProvider } from 'wagmi';
 import { createAppKit } from '@reown/appkit/react';
 
 // THE FIX: Using the relative path to go up one level and into the config folder
-import { wagmiAdapter, projectId, networks } from '../config/reown';
+import { wagmiAdapter, projectId, networks, defaultNetwork, customRpcUrls } from '../config/reown';
 
 const queryClient = new QueryClient();
 
@@ -22,6 +22,8 @@ createAppKit({
     adapters: [wagmiAdapter],
     projectId,
     networks,
+    defaultNetwork,
+    customRpcUrls,
     metadata,
     themeMode: 'dark',
     features: {

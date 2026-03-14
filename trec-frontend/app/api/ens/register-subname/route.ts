@@ -135,9 +135,9 @@ export async function POST(request: NextRequest) {
       const [, , parentExpiry] = await nameWrapper.read.getData([
         BigInt(parentNode),
       ]);
-      subExpiry = parentExpiry > 0n ? parentExpiry : 4102444800n;
+      subExpiry = parentExpiry > BigInt(0) ? parentExpiry : BigInt(4102444800);
     } catch {
-      subExpiry = 4102444800n;
+      subExpiry = BigInt(4102444800);
     }
 
     // Guard against overwriting a subname already owned by someone else.
@@ -167,7 +167,7 @@ export async function POST(request: NextRequest) {
       normalizedLabel,
       ownerAddress as Address,
       PUBLIC_RESOLVER_SEPOLIA as Address,
-      0n,
+      BigInt(0),
       0,
       subExpiry,
     ]);
