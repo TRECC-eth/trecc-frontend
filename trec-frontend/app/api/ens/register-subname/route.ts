@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   createWalletClient,
+  fallback,
   getContract,
   http,
   isAddress,
@@ -9,6 +10,13 @@ import {
 import { privateKeyToAccount } from "viem/accounts";
 import { sepolia } from "viem/chains";
 import { namehash, normalize } from "viem/ens";
+
+const RPC_TIMEOUT_MS = 60_000;
+/** Fallback Sepolia RPCs when primary (env or rpc.sepolia.org) fails or returns 522. */
+const SEPOLIA_FALLBACK_RPCS = [
+  "https://rpc.ankr.com/eth_sepolia",
+  "https://ethereum-sepolia.blockpi.network/v1/rpc/public",
+];
 
 const NAME_WRAPPER_SEPOLIA = "0x0635513f179D50A207757E05759CbD106d7dFcE8";
 const PUBLIC_RESOLVER_SEPOLIA = "0xE99638b40E4Fff0129D56f03b55b6bbC4BBE49b5";
@@ -115,12 +123,22 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Primary: custom RPC from env, or chain default. Then fallbacks if primary fails (e.g. 522 from rpc.sepolia.org).
+  const rpcUrl = process.env.SEPOLIA_RPC_URL || process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL;
+  const transports = [
+    ...(rpcUrl ? [http(rpcUrl, { timeout: RPC_TIMEOUT_MS })] : [http(undefined, { timeout: RPC_TIMEOUT_MS })]),
+    ...SEPOLIA_FALLBACK_RPCS.map((url) => http(url, { timeout: RPC_TIMEOUT_MS })),
+    // Chain default as last resort (e.g. Thirdweb) if no custom URL was set, avoid duplicate
+    ...(rpcUrl ? [http(undefined, { timeout: RPC_TIMEOUT_MS })] : []),
+  ];
+  const transport = fallback(transports);
+
   try {
     const account = privateKeyToAccount(privateKey as `0x${string}`);
     const client = createWalletClient({
       account,
       chain: sepolia,
-      transport: http(),
+      transport,
     });
 
     const nameWrapper = getContract({
@@ -174,14 +192,76 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ txHash, ensName: fullSubname });
   } catch (e) {
-    const err = e as Error & { shortMessage?: string; details?: string; cause?: unknown };
+    const err = e as Error & {
+      shortMessage?: string;
+      details?: string;
+      cause?: unknown;
+      name?: string;
+    };
     const message = err.shortMessage || err.message || String(e);
-    const details =
-      err.details ??
-      (err.cause instanceof Error ? err.cause.message : undefined);
+    const causeMessage =
+      err.cause instanceof Error ? err.cause.message : String(err.cause ?? "");
+
+    // Specific error handling for clearer API responses and logging
+    const isTimeout =
+      err.name === "TimeoutError" ||
+      /timed out|too long to respond|timeout|status:\s*522|HTTP request failed/i.test(message) ||
+      /timed out|too long to respond|timeout|status:\s*522|Connection timed out/i.test(causeMessage);
+
+    if (isTimeout) {
+      console.error("ENS register-subname RPC timeout:", {
+        message,
+        cause: causeMessage,
+        url: (err as { url?: string }).url,
+      });
+      return NextResponse.json(
+        {
+          error: "Network request timed out",
+          code: "RPC_TIMEOUT",
+          details:
+            "All RPCs failed or timed out (e.g. 522). The subname may still have been registered — check app.ens.dev/trecc.eth or try again later.",
+        },
+        { status: 504 }
+      );
+    }
+
+    const isInsufficientFunds =
+      /insufficient funds|not enough funds|exceeds balance/i.test(message) ||
+      /insufficient funds|not enough funds|exceeds balance/i.test(causeMessage);
+    if (isInsufficientFunds) {
+      console.error("ENS register-subname insufficient funds:", message);
+      return NextResponse.json(
+        {
+          error: "Insufficient funds",
+          code: "INSUFFICIENT_FUNDS",
+          details: "The server wallet (ENS owner) does not have enough Sepolia ETH for gas.",
+        },
+        { status: 502 }
+      );
+    }
+
+    const isContractRevert =
+      /revert|execution reverted|contract call failed/i.test(message) ||
+      /revert|execution reverted/i.test(causeMessage);
+    if (isContractRevert) {
+      console.error("ENS register-subname contract revert:", { message, cause: causeMessage });
+      return NextResponse.json(
+        {
+          error: "Contract call failed",
+          code: "CONTRACT_REVERT",
+          details: causeMessage || message,
+        },
+        { status: 400 }
+      );
+    }
+
+    // Generic fallback
     console.error("ENS register-subname error:", e);
     return NextResponse.json(
-      { error: "Failed to register subname", details: details || message },
+      {
+        error: "Failed to register subname",
+        details: causeMessage || message,
+      },
       { status: 500 }
     );
   }

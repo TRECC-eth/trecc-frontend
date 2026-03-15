@@ -22,23 +22,27 @@ const ERC20_ABI = [
 // Token definitions with high-res icons
 type Token = { symbol: string; icon: string; isNative: boolean; decimals: number; color: string };
 const TOKENS: Token[] = [
-  { 
-    symbol: 'USDC', 
-    icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png', 
-    isNative: false, 
+  {
+    symbol: 'USDC',
+    icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png',
+    isNative: false,
     decimals: 6,
     color: 'blue'
   },
-  { 
-    symbol: 'ETH', 
-    icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png', 
-    isNative: true, 
+  {
+    symbol: 'ETH',
+    icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png',
+    isNative: true,
     decimals: 18,
     color: 'white'
   },
 ];
 
-export default function LenderVault() {
+interface LenderVaultProps {
+  onDepositSuccess?: () => void;
+}
+
+export default function LenderVault({ onDepositSuccess }: LenderVaultProps) {
   const [amount, setAmount] = useState('');
   const [selectedToken, setSelectedToken] = useState<Token>(TOKENS[0]);
   const [showSelector, setShowSelector] = useState(false);
@@ -76,9 +80,9 @@ export default function LenderVault() {
               abi: VAULT_ABI,
               functionName: 'depositLiquidity',
               args: [rawAmount],
-            }, { 
-              onSuccess: () => { setStep('success'); refetch(); }, 
-              onError: () => setStep('idle') 
+            }, {
+              onSuccess: () => { setStep('success'); refetch(); onDepositSuccess?.(); },
+              onError: () => setStep('idle')
             });
           }, 2000);
         },
@@ -91,16 +95,16 @@ export default function LenderVault() {
         abi: VAULT_ABI,
         functionName: 'stakeBond',
         value: rawAmount,
-      }, { 
-        onSuccess: () => { setStep('success'); }, 
-        onError: () => setStep('idle') 
+      }, {
+        onSuccess: () => { setStep('success'); onDepositSuccess?.(); },
+        onError: () => setStep('idle')
       });
     }
   };
 
   return (
     <div className="max-w-md mx-auto w-full space-y-4">
-      
+
       {/* TVL Display */}
       <div className="bg-[#0a0a0a] p-6 rounded-2xl border border-white/5 flex justify-between items-center">
         <div>
@@ -116,19 +120,19 @@ export default function LenderVault() {
 
       <form onSubmit={handleAction} className="space-y-4">
         <div className="relative group">
-          <input 
-            type="number" 
+          <input
+            type="number"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            placeholder="0.00" 
+            placeholder="0.00"
             className="w-full bg-[#050505] border border-white/10 p-5 pl-12 pr-36 rounded-2xl text-white text-2xl placeholder-zinc-800 focus:outline-none focus:border-white/20 transition-all"
             required
           />
           <Wallet className="absolute left-4 top-6 text-zinc-700" size={20} />
-          
+
           {/* Token Selector UI */}
           <div className="absolute right-2 top-2 bottom-2 flex items-center">
-            <button 
+            <button
               type="button"
               onClick={() => setShowSelector(!showSelector)}
               className="flex items-center gap-2 bg-zinc-900 border border-white/5 py-2 px-3 rounded-xl hover:bg-zinc-800 transition-colors"
@@ -159,8 +163,8 @@ export default function LenderVault() {
           </div>
         </div>
 
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           disabled={step !== 'idle' || !amount}
           className="w-full bg-white text-black py-5 rounded-2xl font-black uppercase text-xs tracking-widest flex justify-center items-center gap-2 hover:bg-zinc-200 disabled:opacity-30 transition-all active:scale-[0.98]"
         >
@@ -168,7 +172,7 @@ export default function LenderVault() {
           {step === 'processing' && <><Loader2 className="animate-spin" size={16} /> Confirming...</>}
           {step === 'success' && <><CheckCircle2 size={16} /> Success</>}
           {step === 'idle' && (
-             selectedToken.symbol === 'USDC' ? <><ArrowDownCircle size={16} /> Provide Liquidity</> : <><ArrowDownCircle size={16} /> Stake Bond</>
+            selectedToken.symbol === 'USDC' ? <><ArrowDownCircle size={16} /> Provide Liquidity</> : <><ArrowDownCircle size={16} /> Stake Bond</>
           )}
         </button>
       </form>

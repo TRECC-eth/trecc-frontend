@@ -8,7 +8,7 @@ import Footer from "../components/Footer";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "TREC Protocol",
+  title: "TRECC Protocol",
   description: "Trustless Reputation & Evaluation Credit",
 };
 

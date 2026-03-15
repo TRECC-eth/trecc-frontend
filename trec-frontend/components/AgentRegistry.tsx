@@ -1,12 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useReadContract } from 'wagmi';
 import { ShieldCheck, UserPlus, Loader2, Zap } from 'lucide-react';
 import { REGISTRY_ABI } from '../constants/abi/registryAbi';
 import { TREC_REGISTRY_ADDRESS } from '../constants/addresses';
 
-export default function AgentRegistry() {
+interface AgentRegistryProps {
+  onAgentMinted?: () => void;
+}
+
+export default function AgentRegistry({ onAgentMinted }: AgentRegistryProps) {
   const [ensName, setEnsName] = useState('');
   const { address, isConnected } = useAccount();
 
@@ -34,6 +38,10 @@ export default function AgentRegistry() {
       args: [ensName],
     });
   };
+
+  useEffect(() => {
+    if (isSuccess) onAgentMinted?.();
+  }, [isSuccess, onAgentMinted]);
 
   // STATE: Not Connected
   if (!isConnected) {

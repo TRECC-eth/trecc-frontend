@@ -23,8 +23,8 @@ const DEMO_NAME = "sky.eth";
 const DEMO_AVATAR = "https://api.dicebear.com/7.x/avataaars/svg?seed=Sky";
 
 const CHAIN_ICON_URLS: Record<number, string> = {
-  84532: 'https://base.org/images/logo.svg', 
-  11155111: 'https://ethereum.org/favicon.ico', 
+  84532: 'https://base.org/images/logo.svg',
+  11155111: 'https://ethereum.org/favicon.ico',
 };
 function getChainIconUrl(chainId: number): string {
   return CHAIN_ICON_URLS[chainId] ?? `https://ethereum.org/favicon.ico`;
@@ -105,10 +105,10 @@ export default function Navbar() {
         <Link href="/" className="flex items-center gap-3 group z-10">
           <div className="relative group-hover:scale-105 transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]">
             <div className="absolute inset-0 bg-white/20 blur-md rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
-            <img 
-              src="/logo.png" 
-              alt="Logo" 
-              className="relative w-10 h-10 object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" 
+            <img
+              src="/logo.png"
+              alt="Logo"
+              className="relative w-10 h-10 object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
             />
           </div>
         </Link>
@@ -155,7 +155,7 @@ export default function Navbar() {
                     : '—'}
                 </span>
               </div>
-              
+
               {/* Connected Wallet Pill - Soft Machined Transition */}
               <button
                 type="button"
@@ -179,7 +179,7 @@ export default function Navbar() {
               </button>
             </>
           ) : (
-            
+
             /* --- SOFTENED 3D CHROMIUM BUTTON --- */
             <button
               onClick={() => openWalletModal?.()}
@@ -208,10 +208,10 @@ export default function Navbar() {
             >
               {/* Sweeping Light Glare Effect on Hover */}
               <div className="absolute top-0 -left-[100%] w-[50%] h-full bg-gradient-to-r from-transparent via-white/80 to-transparent skew-x-[-45deg] group-hover:left-[200%] transition-all duration-1000 ease-in-out pointer-events-none" />
-              
+
               <span className="relative z-10">Connect Wallet</span>
             </button>
-            
+
           )}
         </div>
       </nav>
