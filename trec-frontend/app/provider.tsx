@@ -11,7 +11,7 @@ import { wagmiAdapter, projectId, networks, defaultNetwork, customRpcUrls } from
 const queryClient = new QueryClient();
 
 const metadata = {
-  name: 'TREC Protocol',
+  name: 'TRECC Protocol',
   description: 'ERC-8004 AI Agent Lending',
   url: 'http://trecc.vercel.app',
   icons: ['https://avatars.githubusercontent.com/u/179229932'],
@@ -19,17 +19,17 @@ const metadata = {
 
 // Initialize the Reown Modal
 createAppKit({
-    adapters: [wagmiAdapter],
-    projectId,
-    networks,
-    defaultNetwork,
-    customRpcUrls,
-    metadata,
-    themeMode: 'dark',
-    features: {
-      analytics: true,
-    },
-  });
+  adapters: [wagmiAdapter],
+  projectId,
+  networks,
+  defaultNetwork,
+  customRpcUrls,
+  metadata,
+  themeMode: 'dark',
+  features: {
+    analytics: true,
+  },
+});
 
 export function Providers({ children }: { children: ReactNode }) {
   return (

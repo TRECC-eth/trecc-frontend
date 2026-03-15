@@ -38,7 +38,11 @@ const TOKENS: Token[] = [
   },
 ];
 
-export default function LenderVault() {
+interface LenderVaultProps {
+  onDepositSuccess?: () => void;
+}
+
+export default function LenderVault({ onDepositSuccess }: LenderVaultProps) {
   const [amount, setAmount] = useState('');
   const [selectedToken, setSelectedToken] = useState<Token>(TOKENS[0]);
   const [showSelector, setShowSelector] = useState(false);
@@ -77,7 +81,7 @@ export default function LenderVault() {
               functionName: 'depositLiquidity',
               args: [rawAmount],
             }, {
-              onSuccess: () => { setStep('success'); refetch(); },
+              onSuccess: () => { setStep('success'); refetch(); onDepositSuccess?.(); },
               onError: () => setStep('idle')
             });
           }, 2000);
@@ -92,7 +96,7 @@ export default function LenderVault() {
         functionName: 'stakeBond',
         value: rawAmount,
       }, {
-        onSuccess: () => { setStep('success'); },
+        onSuccess: () => { setStep('success'); onDepositSuccess?.(); },
         onError: () => setStep('idle')
       });
     }

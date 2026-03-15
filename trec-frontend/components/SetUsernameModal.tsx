@@ -47,12 +47,18 @@ export default function SetUsernameModal({ isOpen, onClose, onSuccess }: SetUser
     setEnsName(null);
     setIsPending(true);
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 70_000); // 70s so server 60s timeout can complete first
+
     try {
       const res = await fetch('/api/ens/register-subname', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: normalizedLabel, ownerAddress: address }),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       const data = (await res.json()) as {
         txHash?: string;
@@ -60,14 +66,22 @@ export default function SetUsernameModal({ isOpen, onClose, onSuccess }: SetUser
         error?: string;
         details?: string;
         hint?: string;
+        code?: string;
       };
 
       if (!res.ok) {
-        // 501 = server not configured (e.g. missing TRECC_ENS_OWNER_PRIVATE_KEY on Vercel)
-        const userMessage =
-          res.status === 501
-            ? 'Subname registration is not available right now. Please try again later or contact support.'
-            : (data.details || data.error || `Request failed (${res.status})`);
+        const code = data.code as string | undefined;
+        let userMessage: string;
+        if (res.status === 501) {
+          userMessage =
+            'Subname registration is not available right now. Please try again later or contact support.';
+        } else if (code === 'RPC_TIMEOUT' || res.status === 504) {
+          userMessage =
+            data.details ||
+            'Registration is taking too long. Your subname may still have been created — check app.ens.dev/trecc.eth or try again.';
+        } else {
+          userMessage = data.details || data.error || `Request failed (${res.status})`;
+        }
         const hint = res.status !== 501 && data.hint ? ` — ${data.hint}` : '';
         setError(`${userMessage}${hint}`);
         return;
@@ -80,7 +94,14 @@ export default function SetUsernameModal({ isOpen, onClose, onSuccess }: SetUser
         onSuccess?.(normalizedLabel);
       }
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Network error — please try again.');
+      clearTimeout(timeoutId);
+      if (e instanceof Error && e.name === 'AbortError') {
+        setError(
+          'Registration is taking too long. Your subname may still have been created — check app.ens.dev/trecc.eth or try again.'
+        );
+      } else {
+        setError(e instanceof Error ? e.message : 'Network error — please try again.');
+      }
     } finally {
       setIsPending(false);
     }
