@@ -3,9 +3,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import BorrowerGate from '../../../components/BorrowerGate';
 import BorrowerDashboard from '../../../components/BorrowerDashboard';
-import AgentRegistry from '../../../components/AgentRegistry';
-import ElsaChat from '../../../components/ElsaChat';
 
 export default function BorrowerDashboardPage() {
   return (
@@ -26,8 +25,9 @@ export default function BorrowerDashboardPage() {
         <div className="w-20" />
       </div>
       <div className="flex-1 p-4 md:p-6 overflow-auto flex flex-col gap-6">
-        <BorrowerDashboard />
-        {/* <ElsaChat /> */}
+        <BorrowerGate>
+          <BorrowerDashboard />
+        </BorrowerGate>
       </div>
     </div>
   );
