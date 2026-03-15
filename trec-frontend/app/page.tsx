@@ -1,14 +1,16 @@
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { TrendingUp, Bot, ArrowLeft } from 'lucide-react';
 import AgentRegistry from '../components/AgentRegistry';
 import LenderVault from '../components/LenderVault';
 import ElsaChat from '../components/ElsaChat';
+import BorrowerGate from '../components/BorrowerGate';
 
 export default function Home() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [role, setRole] = useState<'lender' | 'borrower' | null>(null);
   const [hasProvidedLiquidity, setHasProvidedLiquidity] = useState(false);
   const [agentCreated, setAgentCreated] = useState(false);
@@ -24,6 +26,11 @@ export default function Home() {
 
   const handleFundSuccess = useCallback(() => {
     setHasFundedAgent(true);
+    router.push('/dashboard/borrower');
+  }, [router]);
+
+  const handleAgentMinted = useCallback(() => {
+    setAgentCreated(true);
     router.push('/dashboard/borrower');
   }, [router]);
 
@@ -45,6 +52,15 @@ export default function Home() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    const roleParam = searchParams.get('role');
+    if (roleParam === 'borrower') {
+      setRole('borrower');
+      setIsInitializing(false);
+    }
+  }, [mounted, searchParams]);
 
   useEffect(() => {
     if (agentCreated && hasFundedAgent && role === 'borrower') router.push('/dashboard/borrower');
@@ -214,27 +230,29 @@ export default function Home() {
           </div>
         </div>
       ) : (
-          <div className="w-full flex flex-col gap-10">
-            <div className="
+          <BorrowerGate>
+            <div className="w-full flex flex-col gap-10">
+              <div className="
             p-10 md:p-14 rounded-[2rem] relative flex flex-col items-start
             bg-[#030303] border border-white/[0.08]
             shadow-[0_20px_50px_-10px_rgba(0,0,0,1),inset_0_1px_0_rgba(255,255,255,0.02)]
           ">
-              <h2 className="text-3xl font-medium mb-2 text-transparent bg-clip-text bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_40%,#8c8c8c_100%)] tracking-tight">
-                Agent Identity
-              </h2>
-              <p className="text-zinc-500 mb-10 font-light text-sm tracking-wide">
-                Establish your core identity and on-chain credit parameters.
-              </p>
-              <div className="w-full">
-                <AgentRegistry />
+                <h2 className="text-3xl font-medium mb-2 text-transparent bg-clip-text bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_40%,#8c8c8c_100%)] tracking-tight">
+                  Agent Identity
+                </h2>
+                <p className="text-zinc-500 mb-10 font-light text-sm tracking-wide">
+                  Establish your core identity and on-chain credit parameters.
+                </p>
+                <div className="w-full">
+                  <AgentRegistry onAgentMinted={handleAgentMinted} />
+                </div>
+              </div>
+
+              <div className="drop-shadow-2xl">
+                <ElsaChat />
               </div>
             </div>
-
-            <div className="drop-shadow-2xl">
-              <ElsaChat />
-            </div>
-          </div>
+          </BorrowerGate>
       )}
     </div>
   );

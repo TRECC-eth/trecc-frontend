@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { Network } from 'lucide-react';
 import Link from 'next/link';
 import { formatUnits } from 'viem';
@@ -31,6 +32,7 @@ function getChainIconUrl(chainId: number): string {
 }
 
 export default function Navbar() {
+  const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const [showUsernameModal, setShowUsernameModal] = useState(false);
   const [chainIconError, setChainIconError] = useState(false);
@@ -68,7 +70,8 @@ export default function Navbar() {
 
   const handleUsernameSuccess = useCallback(() => {
     setShowUsernameModal(false);
-  }, []);
+    router.push('/dashboard/borrower');
+  }, [router]);
 
   const { data: realEnsName } = useEnsName({ address, chainId: mainnet.id });
   const { data: realEnsAvatar } = useEnsAvatar({ name: realEnsName || undefined, chainId: mainnet.id });

@@ -15,7 +15,7 @@ export default function AgentRegistry({ onAgentMinted }: AgentRegistryProps) {
   const { address, isConnected } = useAccount();
 
   // 1. Hook to Mint the Agent NFT
-  const { writeContract, data: hash, isPending: isMinting } = useWriteContract();
+  const { writeContractAsync, data: hash, isPending: isMinting } = useWriteContract();
 
   // 2. Wait for the transaction to actually hit the block
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
@@ -29,19 +29,20 @@ export default function AgentRegistry({ onAgentMinted }: AgentRegistryProps) {
     query: { enabled: isSuccess }
   });
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (!ensName) return;
-    writeContract({
-      address: TREC_REGISTRY_ADDRESS,
-      abi: REGISTRY_ABI,
-      functionName: 'registerAgent',
-      args: [ensName],
-    });
+    try {
+      await writeContractAsync({
+        address: TREC_REGISTRY_ADDRESS,
+        abi: REGISTRY_ABI,
+        functionName: 'registerAgent',
+        args: [ensName],
+      });
+      onAgentMinted?.();
+    } catch {
+      // User rejected or tx failed; don't redirect
+    }
   };
-
-  useEffect(() => {
-    if (isSuccess) onAgentMinted?.();
-  }, [isSuccess, onAgentMinted]);
 
   // STATE: Not Connected
   if (!isConnected) {
