@@ -27,6 +27,11 @@ export default function Home() {
     router.push('/dashboard/borrower');
   }, [router]);
 
+  const handleAgentMinted = useCallback(() => {
+    setAgentCreated(true);
+    router.push('/dashboard/borrower');
+  }, [router]);
+
   const handleSwitchRole = useCallback(() => {
     setRole(null);
     setHasProvidedLiquidity(false);
@@ -227,7 +232,7 @@ export default function Home() {
                 Establish your core identity and on-chain credit parameters.
               </p>
               <div className="w-full">
-                <AgentRegistry />
+                <AgentRegistry onAgentMinted={handleAgentMinted} />
               </div>
             </div>
 
