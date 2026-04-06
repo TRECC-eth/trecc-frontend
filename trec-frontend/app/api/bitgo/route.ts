@@ -12,11 +12,25 @@ const APPROVED_PROTOCOLS = [
 
 export async function POST(req: Request) {
   try {
+    // --- 0. BITGO CONFIG (what you need to make it work) ---
+    const accessToken = process.env.BITGO_ACCESS_TOKEN;
+    const walletId = process.env.BITGO_WALLET_ID;
+    const walletPassphrase = process.env.BITGO_WALLET_PASSPHRASE;
+    if (!accessToken || !walletId || !walletPassphrase) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "BitGo is not configured. Set BITGO_ACCESS_TOKEN, BITGO_WALLET_ID, and BITGO_WALLET_PASSPHRASE in .env (see BITGO_NEEDED.md).",
+        },
+        { status: 503 }
+      );
+    }
+
     const body = await req.json();
     const { to, value, data } = body;
 
-    if (!to || !data) {
-      return NextResponse.json({ error: "Missing transaction parameters" }, { status: 400 });
+    if (!to) {
+      return NextResponse.json({ error: "Missing transaction parameters (to required)" }, { status: 400 });
     }
 
     // --- 1. AI RISK ASSESSMENT ---
@@ -31,20 +45,18 @@ export async function POST(req: Request) {
     
     // --- 2. BITGO MPC EXECUTION ---
     const bitgo = new BitGo({ env: 'test' });
-    bitgo.authenticateWithAccessToken({ accessToken: process.env.BITGO_ACCESS_TOKEN as string });
-    
-    // Using 'teth' for testnet Ethereum
-    const wallet = await bitgo.coin('teth').wallets().get({ id: process.env.BITGO_WALLET_ID as string });
+    bitgo.authenticateWithAccessToken({ accessToken });
+    const wallet = await bitgo.coin('teth').wallets().get({ id: walletId });
 
     console.log("Elsa is executing transaction via BitGo MPC...");
-    
-    // Send the transaction (Passphrase is passed securely here)
+
+    const txData = data ?? '0x';
     const transaction = await wallet.send({
       address: to,
-      amount: value || '0', 
+      amount: value || '0',
       type: 'contractCall',
-      data: data,
-      walletPassphrase: process.env.BITGO_WALLET_PASSPHRASE as string 
+      data: txData,
+      walletPassphrase,
     });
 
     return NextResponse.json({ 

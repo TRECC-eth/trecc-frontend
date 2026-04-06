@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAccount, useSendTransaction, useChainId, useSwitchChain } from 'wagmi';
-import { useAppKit } from '@reown/appkit/react';
+import { usePrivy } from '@privy-io/react-auth';
 import { parseEther } from 'viem';
 import { baseSepolia } from 'viem/chains';
 import { AtSign, ShieldCheck, Loader2, User, FileText, ArrowRight, CheckCircle2, Calendar, DollarSign, Lock, AlertCircle } from 'lucide-react';
@@ -28,7 +28,7 @@ export default function BorrowerGate({ children }: BorrowerGateProps) {
   const chainId = useChainId();
   const { switchChainAsync } = useSwitchChain();
   const { sendTransactionAsync, data: txHash } = useSendTransaction();
-  const { open: openWalletModal } = useAppKit();
+  const { login: openWalletModal } = usePrivy();
   const [showSubnameModal, setShowSubnameModal] = useState(false);
   const [completedSubnameLabel, setCompletedSubnameLabel] = useState<string | null>(null);
   const [kycVerified, setKycVerified] = useState(false);

@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /c/Users/rajde/Desktop/trecc-2/trecc-frontend/trec-frontend/components -type f \\\\\\(-name *.tsx -o -name *.ts -o -name *.css \\\\\\))",
+      "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")",
+      "Bash(grep:*)",
+      "Read(//c/Users/rajde/Desktop/trecc-2/portfolio/**)",
+      "Bash(npm run:*)"
+    ]
+  }
+}

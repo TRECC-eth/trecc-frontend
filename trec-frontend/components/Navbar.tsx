@@ -8,7 +8,7 @@ import { formatUnits } from 'viem';
 import { namehash } from 'viem/ens';
 import { useAccount, useBalance, useChainId, useEnsName, useEnsAvatar, useReadContract } from 'wagmi';
 import { mainnet } from 'wagmi/chains';
-import { useAppKit } from '@reown/appkit/react';
+import { usePrivy } from '@privy-io/react-auth';
 import {
   TRECC_ENS_PARENT,
   ENS_SEPOLIA,
@@ -41,7 +41,7 @@ export default function Navbar() {
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
   const { data: balance } = useBalance({ address });
-  const { open: openWalletModal } = useAppKit();
+  const { login: openWalletModal } = usePrivy();
   const treccLabel = getStoredTreccUsername(address);
 
   const subnameTokenId = useMemo(() => {

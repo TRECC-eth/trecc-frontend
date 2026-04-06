@@ -85,11 +85,12 @@ export default function BorrowerDashboard() {
 
       if (data.success) {
         console.log("Boom! Transaction Hash:", data.txHash);
-        setAiStatus('monitoring'); 
+        setAiStatus('monitoring');
       } else {
         console.error("Execution Blocked:", data.error);
-        alert(`AI Execution Failed: ${data.error}`);
-        setAiStatus('opportunity'); 
+        const isNotConfigured = response.status === 503 || (data.error && String(data.error).includes('not configured'));
+        alert(isNotConfigured ? 'BitGo is not configured. Add BITGO_ACCESS_TOKEN, BITGO_WALLET_ID, and BITGO_WALLET_PASSPHRASE to .env (see BITGO_NEEDED.md).' : `AI Execution Failed: ${data.error}`);
+        setAiStatus('opportunity');
       }
     } catch (error) {
       console.error("Network error:", error);
