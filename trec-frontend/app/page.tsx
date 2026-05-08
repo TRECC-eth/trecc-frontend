@@ -94,11 +94,7 @@ export default function Home() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_600px_at_30%_110%,rgba(140,145,170,0.07),transparent)]" />
         </div>
 
-        <div className="relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-1000">
-
-        </div>
-
-        <div className="relative z-10 text-center mb-8 animate-in slide-in-from-bottom-6 duration-1000 delay-150 fade-in">
+        <div className="relative z-10 text-center mb-8">
           <h1 className="
             text-5xl md:text-7xl lg:text-[5.5rem] font-medium tracking-tight leading-tight
             text-transparent bg-clip-text 
