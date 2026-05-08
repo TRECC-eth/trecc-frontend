@@ -86,8 +86,13 @@ export default function Home() {
     return (
       <div className={`flex flex-col items-center justify-center flex-grow p-4 md:p-8 relative min-h-[90vh] bg-black transition-opacity duration-1000 ease-in-out ${mounted ? 'opacity-100' : 'opacity-0'}`}>
 
-        {/* Studio Lighting */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-white/[0.03] rounded-[100%] blur-[100px] pointer-events-none" />
+        {/* Radial gradient background */}
+        <div className="absolute inset-0 z-0 pointer-events-none">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_120%,rgba(200,200,220,0.18),transparent)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_100%,rgba(160,165,185,0.1),transparent)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_600px_at_70%_110%,rgba(140,145,170,0.07),transparent)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_600px_at_30%_110%,rgba(140,145,170,0.07),transparent)]" />
+        </div>
 
         <div className="relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-1000">
 
