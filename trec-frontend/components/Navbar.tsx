@@ -16,7 +16,6 @@ import {
 } from '../constants/ens';
 import { NAME_WRAPPER_ABI } from '../constants/abi/nameWrapperAbi';
 import { getStoredTreccUsername } from '../lib/ens-storage';
-import SetUsernameModal from './SetUsernameModal';
 
 // --- CONFIG: PASTE YOUR WALLET ADDRESS HERE FOR THE DEMO ---
 const DEMO_ADDRESS = "0x29d637b793c29372ab93cd4f401f1db639835097";
@@ -34,7 +33,6 @@ function getChainIconUrl(chainId: number): string {
 export default function Navbar() {
   const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
-  const [showUsernameModal, setShowUsernameModal] = useState(false);
   const [chainIconError, setChainIconError] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -63,15 +61,8 @@ export default function Navbar() {
 
   useEffect(() => {
     setMounted(true);
-    if (isConnected && address && !isSubnameVerifiedOnChain && !treccLabel) {
-      setShowUsernameModal(true);
-    }
-  }, [isConnected, address, isSubnameVerifiedOnChain, treccLabel]);
+  }, []);
 
-  const handleUsernameSuccess = useCallback(() => {
-    setShowUsernameModal(false);
-    router.push('/dashboard/borrower');
-  }, [router]);
 
   const { data: realEnsName } = useEnsName({ address, chainId: mainnet.id });
   const { data: realEnsAvatar } = useEnsAvatar({ name: realEnsName || undefined, chainId: mainnet.id });
@@ -219,11 +210,6 @@ export default function Navbar() {
         </div>
       </nav>
 
-      <SetUsernameModal
-        isOpen={showUsernameModal}
-        onClose={() => setShowUsernameModal(false)}
-        onSuccess={handleUsernameSuccess}
-      />
     </div>
   );
 }

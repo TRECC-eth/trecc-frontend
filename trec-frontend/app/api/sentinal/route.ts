@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createPublicClient, http } from 'viem';
-import { baseSepolia } from 'viem/chains';
+import { sepolia } from 'viem/chains';
 
 const CHAINLINK_ABI = [
   {
@@ -18,8 +18,8 @@ const CHAINLINK_ABI = [
   }
 ] as const;
 
-// Base Sepolia Chainlink ETH/USD Price Feed Address
-const CHAINLINK_ETH_USD_BASE_SEPOLIA = '0x4aDC67696bA383F43DD60A9e78F2C97Fbbfc7cb1';
+// Ethereum Sepolia Chainlink ETH/USD Price Feed Address
+const CHAINLINK_ETH_USD_SEPOLIA = '0x694AA1769357215DE4FAC081bf1f309aDC325306';
 
 // We assume the AI entered the position when ETH was at this price
 const ENTRY_PRICE = 3000; 
@@ -28,12 +28,12 @@ const DANGER_THRESHOLD = ENTRY_PRICE * 0.90; // 10% Drop ($2,700)
 export async function GET() {
   try {
     const publicClient = createPublicClient({
-      chain: baseSepolia,
+      chain: sepolia,
       transport: http()
     });
 
     const roundData = await publicClient.readContract({
-      address: CHAINLINK_ETH_USD_BASE_SEPOLIA,
+      address: CHAINLINK_ETH_USD_SEPOLIA,
       abi: CHAINLINK_ABI,
       functionName: 'latestRoundData',
     });

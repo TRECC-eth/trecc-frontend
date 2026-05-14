@@ -5,16 +5,13 @@ import { useRouter } from 'next/navigation';
 import { useAccount, useSendTransaction, useChainId, useSwitchChain } from 'wagmi';
 import { usePrivy } from '@privy-io/react-auth';
 import { parseEther } from 'viem';
-import { baseSepolia } from 'viem/chains';
+import { sepolia } from 'viem/chains';
 import { AtSign, ShieldCheck, Loader2, User, FileText, ArrowRight, CheckCircle2, Calendar, DollarSign, Lock, AlertCircle } from 'lucide-react';
-import { getStoredTreccUsername } from '../lib/ens-storage';
 import { isKycVerified, setStoredKycStatus } from '../lib/kyc-storage';
-import { TRECC_ENS_PARENT } from '../constants/ens';
 import { KYC_COLLATERAL_RECEIVER } from '../constants/addresses';
-import SetUsernameModal from './SetUsernameModal';
 
-const BASE_SEPOLIA_CHAIN_ID = baseSepolia.id;
-/** Collateral is sent to this address on Base Sepolia. */
+const SEPOLIA_CHAIN_ID = sepolia.id;
+/** Collateral is sent to this address on Ethereum Sepolia. */
 const COLLATERAL_RECEIVER = KYC_COLLATERAL_RECEIVER as `0x${string}`;
 const COLLATERAL_ETH = process.env.NEXT_PUBLIC_KYC_COLLATERAL_ETH || '0.01';
 
@@ -29,8 +26,6 @@ export default function BorrowerGate({ children }: BorrowerGateProps) {
   const { switchChainAsync } = useSwitchChain();
   const { sendTransactionAsync, data: txHash } = useSendTransaction();
   const { login: openWalletModal } = usePrivy();
-  const [showSubnameModal, setShowSubnameModal] = useState(false);
-  const [completedSubnameLabel, setCompletedSubnameLabel] = useState<string | null>(null);
   const [kycVerified, setKycVerified] = useState(false);
   const [kycSubmitting, setKycSubmitting] = useState(false);
   const [collateralPaid, setCollateralPaid] = useState(false);
@@ -38,40 +33,28 @@ export default function BorrowerGate({ children }: BorrowerGateProps) {
   const [collateralError, setCollateralError] = useState<string | null>(null);
 
   const COLLATERAL_USD = 110;
-  const isBaseSepolia = chainId === BASE_SEPOLIA_CHAIN_ID;
+  const isSepolia = chainId === SEPOLIA_CHAIN_ID;
 
-  const treccLabel = typeof window !== 'undefined' ? getStoredTreccUsername(address ?? undefined) : null;
   const kycDone = typeof window !== 'undefined' && isKycVerified(address ?? undefined);
 
   useEffect(() => {
     setKycVerified(kycDone);
   }, [kycDone]);
 
-  const hasSubname = !!(treccLabel || completedSubnameLabel);
-  const needsSubname = isConnected && !!address && !hasSubname;
-  const needsKyc = isConnected && !!address && hasSubname && !kycVerified;
-
-  useEffect(() => {
-    if (needsSubname) setShowSubnameModal(true);
-  }, [needsSubname]);
-
-  const handleSubnameSuccess = useCallback((label?: string) => {
-    if (label) setCompletedSubnameLabel(label);
-    setShowSubnameModal(false);
-  }, []);
+  const needsKyc = isConnected && !!address && !kycVerified;
 
   const handlePayCollateral = useCallback(async () => {
     if (!address) return;
     setCollateralError(null);
     setCollateralPaying(true);
     try {
-      if (chainId !== BASE_SEPOLIA_CHAIN_ID) {
-        await switchChainAsync?.({ chainId: BASE_SEPOLIA_CHAIN_ID });
+      if (chainId !== SEPOLIA_CHAIN_ID) {
+        await switchChainAsync?.({ chainId: SEPOLIA_CHAIN_ID });
       }
       await sendTransactionAsync({
         to: COLLATERAL_RECEIVER,
         value: parseEther(COLLATERAL_ETH),
-        chainId: BASE_SEPOLIA_CHAIN_ID,
+        chainId: SEPOLIA_CHAIN_ID,
         gas: BigInt(150000),
       });
     } catch {
@@ -90,13 +73,13 @@ export default function BorrowerGate({ children }: BorrowerGateProps) {
       setKycSubmitting(true);
       setCollateralError(null);
       try {
-        if (chainId !== BASE_SEPOLIA_CHAIN_ID) {
-          await switchChainAsync?.({ chainId: BASE_SEPOLIA_CHAIN_ID });
+        if (chainId !== SEPOLIA_CHAIN_ID) {
+          await switchChainAsync?.({ chainId: SEPOLIA_CHAIN_ID });
         }
         await sendTransactionAsync({
           to: COLLATERAL_RECEIVER,
           value: BigInt(0),
-          chainId: BASE_SEPOLIA_CHAIN_ID,
+          chainId: SEPOLIA_CHAIN_ID,
           gas: BigInt(150000),
         });
         setStoredKycStatus(address, 'verified');
@@ -131,40 +114,6 @@ export default function BorrowerGate({ children }: BorrowerGateProps) {
           </button>
         </div>
       </div>
-    );
-  }
-
-  if (needsSubname) {
-    return (
-      <>
-        <div className="w-full max-w-md mx-auto py-16 px-4">
-          <div className="p-8 rounded-3xl bg-slate-900/80 border border-white/10 space-y-6">
-            <div className="flex items-center gap-3 text-slate-500 text-sm font-medium">
-              <span className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">1</span>
-              <span>Subname</span>
-            </div>
-            <div className="w-14 h-14 rounded-2xl bg-emerald-500/20 flex items-center justify-center mx-auto">
-              <AtSign className="text-emerald-400" size={28} />
-            </div>
-            <h2 className="text-xl font-bold text-white text-center">Set your TRECC subname</h2>
-            <p className="text-slate-400 text-sm text-center">
-              Claim a free subname under <span className="text-white font-medium">{TRECC_ENS_PARENT}</span> (e.g. <span className="font-mono text-slate-300">you.trecc.eth</span>). Required to continue.
-            </p>
-            <button
-              type="button"
-              onClick={() => setShowSubnameModal(true)}
-              className="w-full py-3.5 rounded-2xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 text-emerald-400 font-medium transition-colors flex items-center justify-center gap-2"
-            >
-              Set subname <ArrowRight size={18} />
-            </button>
-          </div>
-        </div>
-        <SetUsernameModal
-          isOpen={showSubnameModal}
-          onClose={() => setShowSubnameModal(false)}
-          onSuccess={handleSubnameSuccess}
-        />
-      </>
     );
   }
 
@@ -284,7 +233,7 @@ export default function BorrowerGate({ children }: BorrowerGateProps) {
                     <div>
                       <p className="text-sm font-medium text-white">Collateral required (≈${COLLATERAL_USD} USD)</p>
                       <p className="text-xs text-zinc-500 font-light">
-                        Pay {COLLATERAL_ETH} ETH on Base Sepolia via MetaMask to complete this step.
+                        Pay {COLLATERAL_ETH} ETH on Ethereum Sepolia via MetaMask to complete this step.
                       </p>
                     </div>
                   </div>
@@ -305,8 +254,8 @@ export default function BorrowerGate({ children }: BorrowerGateProps) {
                           <Loader2 className="w-4 h-4 animate-spin" />
                           {txHash ? 'Confirming…' : 'Check MetaMask…'}
                         </>
-                      ) : !isBaseSepolia ? (
-                        <>Switch to Base Sepolia</>
+                      ) : !isSepolia ? (
+                        <>Switch to Sepolia</>
                       ) : (
                         <>Pay {COLLATERAL_ETH} ETH</>
                       )}
