@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Network } from 'lucide-react';
+import { Network, LogOut, ChevronDown, Copy, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { formatUnits } from 'viem';
 import { namehash } from 'viem/ens';
-import { useAccount, useBalance, useChainId, useEnsName, useEnsAvatar, useReadContract } from 'wagmi';
+import { useAccount, useBalance, useChainId, useDisconnect, useEnsName, useEnsAvatar, useReadContract } from 'wagmi';
 import { mainnet } from 'wagmi/chains';
 import { usePrivy } from '@privy-io/react-auth';
 import {
@@ -39,7 +39,10 @@ export default function Navbar() {
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
   const { data: balance } = useBalance({ address });
-  const { login: openWalletModal } = usePrivy();
+  const { login: openWalletModal, logout } = usePrivy();
+  const { disconnect } = useDisconnect();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const treccLabel = getStoredTreccUsername(address);
 
   const subnameTokenId = useMemo(() => {
@@ -70,7 +73,27 @@ export default function Navbar() {
   const isDemo = address?.toLowerCase() === DEMO_ADDRESS.toLowerCase();
   const treccSubname = isSubnameVerifiedOnChain ? `${treccLabel}.${TRECC_ENS_PARENT}` : null;
   const displayId = treccSubname ?? (isDemo ? DEMO_NAME : (realEnsName || `${address?.slice(0, 4)}...${address?.slice(-4)}`));
-  const displayAvatar = isDemo ? DEMO_AVATAR : (realEnsAvatar || null);
+
+  const randomAvatar = useMemo(() => {
+    if (!address) return null;
+    const seed = address.slice(2, 10);
+    const styles = ['adventurer', 'adventurer-neutral', 'avataaars', 'big-ears', 'bottts', 'fun-emoji', 'lorelei', 'notionists', 'open-peeps', 'pixel-art', 'thumbs'] as const;
+    const styleIndex = parseInt(seed.slice(0, 2), 16) % styles.length;
+    return `https://api.dicebear.com/9.x/${styles[styleIndex]}/svg?seed=${seed}`;
+  }, [address]);
+
+  const displayAvatar = isDemo ? DEMO_AVATAR : (realEnsAvatar || randomAvatar);
+
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [dropdownOpen]);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -150,27 +173,91 @@ export default function Navbar() {
                 </span>
               </div>
 
-              {/* Connected Wallet Pill - Soft Machined Transition */}
-              <button
-                type="button"
-                onClick={() => openWalletModal?.()}
-                className="
-                  group flex items-center gap-2.5 pl-1.5 pr-4 py-1.5 rounded-full 
-                  bg-gradient-to-b from-zinc-200 via-zinc-400 to-zinc-500
-                  border border-zinc-400/50 ring-1 ring-black/10
-                  text-zinc-900 font-bold hover:from-white hover:via-zinc-300 hover:to-zinc-400 
-                  transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.4),inset_0_2px_3px_rgba(255,255,255,0.8)]
-                "
-              >
-                {displayAvatar ? (
-                  <img src={displayAvatar} alt="" className="w-6 h-6 rounded-full object-cover border border-zinc-400 shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]" />
-                ) : (
-                  <div className="w-6 h-6 rounded-full bg-zinc-800 border border-zinc-500 shadow-inner" />
+              {/* Connected Wallet Pill with Dropdown */}
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setDropdownOpen((prev) => !prev)}
+                  className="
+                    group flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-full
+                    bg-gradient-to-b from-zinc-200 via-zinc-400 to-zinc-500
+                    border border-zinc-400/50 ring-1 ring-black/10
+                    text-zinc-900 font-bold hover:from-white hover:via-zinc-300 hover:to-zinc-400
+                    transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.4),inset_0_2px_3px_rgba(255,255,255,0.8)]
+                  "
+                >
+                  {displayAvatar ? (
+                    <img src={displayAvatar} alt="" className="w-7 h-7 rounded-full object-cover border border-zinc-400/60 shadow-[0_1px_3px_rgba(0,0,0,0.4)] bg-white" />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full bg-zinc-800 border border-zinc-500 shadow-inner" />
+                  )}
+                  <span className="text-xs tracking-wider uppercase [text-shadow:0_1px_0_rgba(255,255,255,0.6)]">
+                    {displayId}
+                  </span>
+                  <ChevronDown size={12} className={`text-zinc-600 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {dropdownOpen && (
+                  <div className="
+                    absolute right-0 top-full mt-3 w-64 rounded-2xl overflow-hidden
+                    bg-zinc-900/95 backdrop-blur-xl border border-white/[0.08]
+                    shadow-[0_20px_50px_-10px_rgba(0,0,0,1),0_0_0_1px_rgba(0,0,0,0.5)]
+                    animate-in fade-in slide-in-from-top-2 duration-200
+                    z-50
+                  ">
+                    <div className="p-4 border-b border-white/[0.06] flex items-center gap-3">
+                      {displayAvatar ? (
+                        <img src={displayAvatar} alt="" className="w-10 h-10 rounded-full object-cover border border-white/10 bg-white" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-zinc-800 border border-zinc-700" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-zinc-200 truncate">{displayId}</p>
+                        <p className="text-[11px] text-zinc-500 font-mono truncate">{address}</p>
+                      </div>
+                    </div>
+
+                    <div className="p-1.5">
+                      <button
+                        onClick={() => {
+                          if (address) navigator.clipboard.writeText(address);
+                          setDropdownOpen(false);
+                        }}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.05] transition-colors duration-150"
+                      >
+                        <Copy size={14} />
+                        Copy Address
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          if (address) window.open(`https://etherscan.io/address/${address}`, '_blank');
+                          setDropdownOpen(false);
+                        }}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.05] transition-colors duration-150"
+                      >
+                        <ExternalLink size={14} />
+                        View on Explorer
+                      </button>
+
+                      <div className="my-1 border-t border-white/[0.05]" />
+
+                      <button
+                        onClick={async () => {
+                          setDropdownOpen(false);
+                          disconnect();
+                          try { await logout(); } catch {}
+                          router.push('/');
+                        }}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-red-400 hover:text-red-300 hover:bg-red-500/[0.08] transition-colors duration-150"
+                      >
+                        <LogOut size={14} />
+                        Disconnect
+                      </button>
+                    </div>
+                  </div>
                 )}
-                <span className="text-xs tracking-wider uppercase [text-shadow:0_1px_0_rgba(255,255,255,0.6)]">
-                  {displayId}
-                </span>
-              </button>
+              </div>
             </>
           ) : (
 

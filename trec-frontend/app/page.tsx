@@ -4,7 +4,6 @@ import React, { useState, useCallback, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { TrendingUp, Bot, ArrowLeft } from 'lucide-react';
 import AgentRegistry from '../components/AgentRegistry';
-import LenderVault from '../components/LenderVault';
 import ElsaChat from '../components/ElsaChat';
 import BorrowerGate from '../components/BorrowerGate';
 
@@ -19,42 +18,22 @@ export default function Home() {
 function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [role, setRole] = useState<'lender' | 'borrower' | null>(null);
-  const [hasProvidedLiquidity, setHasProvidedLiquidity] = useState(false);
+  const [role, setRole] = useState<'borrower' | null>(null);
   const [agentCreated, setAgentCreated] = useState(false);
   const [hasFundedAgent, setHasFundedAgent] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
   const [bootText, setBootText] = useState('Initializing...');
 
-  const handleDepositSuccess = useCallback(() => {
-    setHasProvidedLiquidity(true);
-    router.push('/dashboard/lender');
-  }, [router]);
-
-  const handleFundSuccess = useCallback(() => {
-    setHasFundedAgent(true);
-    router.push('/dashboard/borrower');
-  }, [router]);
-
   const handleAgentMinted = useCallback(() => {
     setAgentCreated(true);
     router.push('/dashboard/borrower');
   }, [router]);
 
-  const handleSwitchRole = useCallback(() => {
-    setRole(null);
-    setHasProvidedLiquidity(false);
-    setAgentCreated(false);
-    setHasFundedAgent(false);
-  }, []);
-
-  const handleRoleSelection = useCallback((r: 'lender' | 'borrower') => {
-    setRole(r);
-    if (r === 'borrower') {
-      setIsInitializing(true);
-      setBootText('Initializing...');
-    }
+  const handleBorrowerSelection = useCallback(() => {
+    setRole('borrower');
+    setIsInitializing(true);
+    setBootText('Initializing...');
   }, []);
 
   useEffect(() => {
@@ -71,8 +50,8 @@ function HomeContent() {
   }, [mounted, searchParams]);
 
   useEffect(() => {
-    if (agentCreated && hasFundedAgent && role === 'borrower') router.push('/dashboard/borrower');
-  }, [agentCreated, hasFundedAgent, role, router]);
+    if (agentCreated && hasFundedAgent) router.push('/dashboard/borrower');
+  }, [agentCreated, hasFundedAgent, router]);
 
   useEffect(() => {
     if (!isInitializing || role !== 'borrower') return;
@@ -121,7 +100,7 @@ function HomeContent() {
 
           {/* LENDER: 3D CHROMIUM MODEL CARD */}
           <button
-            onClick={() => handleRoleSelection('lender')}
+            onClick={() => router.push('/capital-provider')}
             className="
               group relative p-10 rounded-[2.5rem] text-left transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]
               /* The Base Chromium Surface Reflection */
@@ -157,7 +136,7 @@ function HomeContent() {
 
           {/* BORROWER: 3D CHROMIUM MODEL CARD */}
           <button
-            onClick={() => handleRoleSelection('borrower')}
+            onClick={() => handleBorrowerSelection()}
             className="
               group relative p-10 rounded-[2.5rem] text-left transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]
               /* The Base Chromium Surface Reflection */
@@ -220,47 +199,29 @@ function HomeContent() {
         <ArrowLeft size={14} strokeWidth={1.5} /> TERMINATE SESSION
       </button>
 
-      {role === 'lender' ? (
-        <div className="
-          p-10 md:p-14 rounded-[2rem] relative
-          bg-[#030303] border border-white/[0.08]
-          shadow-[0_20px_50px_-10px_rgba(0,0,0,1),inset_0_1px_0_rgba(255,255,255,0.02)]
-        ">
-          <h2 className="text-3xl font-medium mb-10 text-transparent bg-clip-text bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_40%,#8c8c8c_100%)] tracking-tight">
-            Liquidity Vault
-          </h2>
-          <div className="w-full">
-            <p className="relative z-10 text-slate-400 mb-8">Provide USDC to start earning yield. You will be taken to your dashboard after your first deposit.</p>
-            <div className="relative z-10 w-full">
-              <LenderVault onDepositSuccess={handleDepositSuccess} />
-            </div>
-          </div>
-        </div>
-      ) : (
-        <BorrowerGate>
-          <div className="w-full flex flex-col gap-10">
-            <div className="
+      <BorrowerGate>
+        <div className="w-full flex flex-col gap-10">
+          <div className="
             p-10 md:p-14 rounded-[2rem] relative flex flex-col items-start
             bg-[#030303] border border-white/[0.08]
             shadow-[0_20px_50px_-10px_rgba(0,0,0,1),inset_0_1px_0_rgba(255,255,255,0.02)]
           ">
-              <h2 className="text-3xl font-medium mb-2 text-transparent bg-clip-text bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_40%,#8c8c8c_100%)] tracking-tight">
-                Agent Identity
-              </h2>
-              <p className="text-zinc-500 mb-10 font-light text-sm tracking-wide">
-                Establish your core identity and on-chain credit parameters.
-              </p>
-              <div className="w-full">
-                <AgentRegistry onAgentMinted={handleAgentMinted} />
-              </div>
-            </div>
-
-            <div className="drop-shadow-2xl">
-              <ElsaChat />
+            <h2 className="text-3xl font-medium mb-2 text-transparent bg-clip-text bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_40%,#8c8c8c_100%)] tracking-tight">
+              Agent Identity
+            </h2>
+            <p className="text-zinc-500 mb-10 font-light text-sm tracking-wide">
+              Establish your core identity and on-chain credit parameters.
+            </p>
+            <div className="w-full">
+              <AgentRegistry onAgentMinted={handleAgentMinted} />
             </div>
           </div>
-        </BorrowerGate>
-      )}
+
+          <div className="drop-shadow-2xl">
+            <ElsaChat />
+          </div>
+        </div>
+      </BorrowerGate>
     </div>
   );
 }

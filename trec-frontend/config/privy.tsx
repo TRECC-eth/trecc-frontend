@@ -15,7 +15,7 @@ export const defaultChain = sepolia;
 export const config = createConfig({
   chains: [sepolia, mainnet],
   transports: {
-    [sepolia.id]: http('https://rpc.sepolia.org'),
+    [sepolia.id]: http('https://ethereum-sepolia-rpc.publicnode.com'),
     [mainnet.id]: http('https://cloudflare-eth.com'),
   },
 });
