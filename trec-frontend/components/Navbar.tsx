@@ -106,7 +106,7 @@ export default function Navbar() {
   if (!mounted) return null;
 
   return (
-    <div className="fixed top-6 left-0 right-0 z-50 flex justify-center w-full pointer-events-none px-4 md:px-8">
+    <div className="fixed top-12 left-0 right-0 z-50 flex justify-center w-full pointer-events-none px-4 md:px-8">
       <nav
         className={`
           relative pointer-events-auto flex items-center justify-between w-full max-w-6xl py-3 
@@ -146,7 +146,7 @@ export default function Navbar() {
             <>
               {/* Balance Pill - Softened Borders */}
               <div
-                className="relative flex items-center gap-2.5 pl-2 pr-4 py-1.5 rounded-full bg-gradient-to-b from-zinc-800 to-zinc-950 border border-white/[0.05] text-zinc-200 font-medium text-sm shadow-[inset_0_1px_4px_rgba(0,0,0,0.8),0_1px_1px_rgba(255,255,255,0.05)]"
+                className="relative flex items-center gap-2.5 pl-3 pr-4 py-2 rounded-full bg-gradient-to-b from-zinc-800 to-zinc-950 border border-white/[0.05] text-zinc-200 font-black text-[11px] uppercase tracking-[0.15em] shadow-[inset_0_1px_4px_rgba(0,0,0,0.8),0_1px_1px_rgba(255,255,255,0.05)]"
                 title={balance ? `${formatUnits(balance.value, balance.decimals)} ${balance.symbol}` : undefined}
               >
                 {chainIconError ? (
@@ -179,22 +179,32 @@ export default function Navbar() {
                   type="button"
                   onClick={() => setDropdownOpen((prev) => !prev)}
                   className="
-                    group flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-full
-                    bg-gradient-to-b from-zinc-200 via-zinc-400 to-zinc-500
-                    border border-zinc-400/50 ring-1 ring-black/10
-                    text-zinc-900 font-bold hover:from-white hover:via-zinc-300 hover:to-zinc-400
-                    transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.4),inset_0_2px_3px_rgba(255,255,255,0.8)]
+                    group relative flex items-center gap-2.5 pl-1.5 pr-4 py-2 rounded-full
+                    font-black uppercase text-[11px] tracking-[0.15em]
+                    text-zinc-800 [text-shadow:0_1px_0_rgba(255,255,255,0.9),0_-1px_0_rgba(0,0,0,0.1)]
+                    bg-[linear-gradient(180deg,#ffffff_0%,#e2e2e2_25%,#999999_45%,#d4d4d4_55%,#737373_100%)]
+                    border border-black/10 ring-1 ring-inset ring-white/30
+                    shadow-[0_15px_25px_-5px_rgba(0,0,0,0.6),inset_0_3px_5px_rgba(255,255,255,0.9),inset_0_-3px_6px_rgba(0,0,0,0.25)]
+                    hover:-translate-y-[2px] hover:scale-[1.02]
+                    hover:bg-[linear-gradient(180deg,#ffffff_0%,#f5f5f5_25%,#a3a3a3_45%,#e5e5e5_55%,#808080_100%)]
+                    hover:shadow-[0_20px_35px_-5px_rgba(0,0,0,0.7),inset_0_4px_6px_rgba(255,255,255,1),inset_0_-3px_6px_rgba(0,0,0,0.2)]
+                    active:translate-y-[1px] active:scale-[0.98]
+                    active:bg-[linear-gradient(180deg,#e2e2e2_0%,#cccccc_25%,#808080_45%,#b3b3b3_55%,#595959_100%)]
+                    active:shadow-[0_5px_10px_-2px_rgba(0,0,0,0.8),inset_0_2px_4px_rgba(0,0,0,0.3),inset_0_-2px_4px_rgba(255,255,255,0.3)]
+                    transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)]
+                    overflow-hidden
                   "
                 >
+                  <div className="absolute top-0 -left-[100%] w-[50%] h-full bg-gradient-to-r from-transparent via-white/80 to-transparent skew-x-[-45deg] group-hover:left-[200%] transition-all duration-1000 ease-in-out pointer-events-none" />
                   {displayAvatar ? (
-                    <img src={displayAvatar} alt="" className="w-7 h-7 rounded-full object-cover border border-zinc-400/60 shadow-[0_1px_3px_rgba(0,0,0,0.4)] bg-white" />
+                    <img src={displayAvatar} alt="" className="relative z-10 w-7 h-7 rounded-full object-cover border border-zinc-400/60 shadow-[0_1px_3px_rgba(0,0,0,0.4)] bg-white" />
                   ) : (
-                    <div className="w-7 h-7 rounded-full bg-zinc-800 border border-zinc-500 shadow-inner" />
+                    <div className="relative z-10 w-7 h-7 rounded-full bg-zinc-800 border border-zinc-500 shadow-inner" />
                   )}
-                  <span className="text-xs tracking-wider uppercase [text-shadow:0_1px_0_rgba(255,255,255,0.6)]">
+                  <span className="relative z-10">
                     {displayId}
                   </span>
-                  <ChevronDown size={12} className={`text-zinc-600 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown size={12} className={`relative z-10 text-zinc-600 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {dropdownOpen && (
@@ -202,7 +212,7 @@ export default function Navbar() {
                     absolute right-0 top-full mt-3 w-64 rounded-2xl overflow-hidden
                     bg-zinc-900/95 backdrop-blur-xl border border-white/[0.08]
                     shadow-[0_20px_50px_-10px_rgba(0,0,0,1),0_0_0_1px_rgba(0,0,0,0.5)]
-                    animate-in fade-in slide-in-from-top-2 duration-200
+                    animate-dropdown-in
                     z-50
                   ">
                     <div className="p-4 border-b border-white/[0.06] flex items-center gap-3">

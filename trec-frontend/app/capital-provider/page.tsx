@@ -1,34 +1,42 @@
 'use client';
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
 import LenderVault from '../../components/LenderVault';
 
 export default function CapitalProviderPage() {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   const handleDepositSuccess = useCallback(() => {
     router.push('/dashboard/lender');
   }, [router]);
 
   return (
-    <div className="p-4 md:p-8 max-w-5xl mx-auto w-full z-10 relative min-h-[90vh] flex flex-col">
+    <div
+      className={`flex flex-col items-center justify-start flex-grow px-4 md:px-8 py-8 md:py-16 transition-opacity duration-500 ${mounted ? 'opacity-100' : 'opacity-0'}`}
+    >
 
-      <div className="
-        p-10 md:p-14 rounded-[2rem] relative
-        bg-[#030303] border border-white/[0.08]
-        shadow-[0_20px_50px_-10px_rgba(0,0,0,1),inset_0_1px_0_rgba(255,255,255,0.02)]
-      ">
-        <h2 className="text-3xl font-medium mb-10 text-transparent bg-clip-text bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_40%,#8c8c8c_100%)] tracking-tight">
-          Liquidity Vault
-        </h2>
-        <div className="w-full">
-          <p className="relative z-10 text-slate-400 mb-8">Provide USDC to start earning yield. You will be taken to your dashboard after your first deposit.</p>
-          <div className="relative z-10 w-full">
-            <LenderVault onDepositSuccess={handleDepositSuccess} />
-          </div>
-        </div>
+      {/* Page header — left-aligned, no decorative icon */}
+      <div className="w-full max-w-lg mb-10">
+        <p className="text-xs font-medium tracking-widest uppercase text-zinc-500 mb-2">
+          Capital Provider
+        </p>
+        <h1 className="text-2xl md:text-3xl font-semibold text-zinc-100 tracking-tight leading-tight">
+          Provide Liquidity
+        </h1>
+        <p className="text-sm text-zinc-500 mt-2 leading-relaxed max-w-sm">
+          Deposit USDC or stake ETH to start earning yield. You'll be redirected to your dashboard after your first deposit.
+        </p>
+      </div>
+
+      {/* Vault component */}
+      <div
+        className={`w-full max-w-lg transition-all duration-500 delay-100 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}
+      >
+        <LenderVault onDepositSuccess={handleDepositSuccess} />
       </div>
     </div>
   );

@@ -24,6 +24,16 @@ body {
   color: var(--foreground);
 }
 
+/* Hide number input spinners */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
 /* Metallic / shiny dashboard surfaces */
 .metallic-shine {
   background: linear-gradient(
@@ -36,3 +46,27 @@ body {
 .metallic-border-glow {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 20px -5px rgba(148, 163, 184, 0.15);
 }
+
+@keyframes dropdown-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0px);
+  }
+}
+
+.animate-dropdown-in {
+  animation: dropdown-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-dropdown-in > * {
+  animation: dropdown-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+.animate-dropdown-in > *:nth-child(1) { animation-delay: 0.03s; }
+.animate-dropdown-in > *:nth-child(2) { animation-delay: 0.08s; }

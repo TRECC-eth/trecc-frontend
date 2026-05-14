@@ -2,10 +2,12 @@
 
 import React, { useState, useCallback, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useAccount } from 'wagmi';
 import { TrendingUp, Bot, ArrowLeft } from 'lucide-react';
 import AgentRegistry from '../components/AgentRegistry';
 import ElsaChat from '../components/ElsaChat';
 import BorrowerGate from '../components/BorrowerGate';
+import { getKycStatus } from '../lib/kyc';
 
 export default function Home() {
   return (
@@ -18,6 +20,7 @@ export default function Home() {
 function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { address } = useAccount();
   const [role, setRole] = useState<'borrower' | null>(null);
   const [agentCreated, setAgentCreated] = useState(false);
   const [hasFundedAgent, setHasFundedAgent] = useState(false);
@@ -30,11 +33,21 @@ function HomeContent() {
     router.push('/dashboard/borrower');
   }, [router]);
 
-  const handleBorrowerSelection = useCallback(() => {
-    setRole('borrower');
-    setIsInitializing(true);
-    setBootText('Initializing...');
-  }, []);
+  const handleBorrowerSelection = useCallback(async () => {
+    if (!address) {
+      setRole('borrower');
+      setIsInitializing(true);
+      setBootText('Initializing...');
+      return;
+    }
+
+    const status = await getKycStatus(address);
+    if (status === 'approved' || status === 'pending') {
+      router.push('/create-agent');
+    } else {
+      router.push('/kyc');
+    }
+  }, [address, router]);
 
   useEffect(() => {
     setMounted(true);
