@@ -7,6 +7,7 @@ import { Shield, ChevronRight, CheckCircle, Loader2 } from 'lucide-react';
 import { submitKyc } from '../../lib/kyc';
 import { AGENT_REGISTRY_ADDRESS } from '../../constants/production-addresses';
 import { REGISTRY_ABI } from '../../constants/abi/registryAbi';
+import EtheralShadow from '../../components/EtheralShadow';
 
 const SEPOLIA_CHAIN_ID = 11155111;
 
@@ -165,9 +166,15 @@ export default function KycPage() {
       {/* Form Card */}
       <form
         onSubmit={handleSubmit}
-        className={`w-full max-w-lg transition-all duration-500 delay-100 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}
+        className={`relative w-full max-w-lg transition-all duration-500 delay-100 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}
       >
-        <div className="rounded-2xl border border-white/[0.06] bg-zinc-900/60 backdrop-blur-xl shadow-[0_20px_40px_-10px_rgba(0,0,0,0.8)] p-6 space-y-5">
+        <EtheralShadow
+          className="absolute inset-0 rounded-2xl pointer-events-none"
+          color="rgba(80, 80, 80, 0.4)"
+          animation={{ scale: 30, speed: 20 }}
+          noise={{ opacity: 0.3, scale: 1 }}
+        />
+        <div className="relative z-10 rounded-2xl border border-white/[0.06] bg-zinc-900/60 backdrop-blur-xl shadow-[0_20px_40px_-10px_rgba(0,0,0,0.8)] p-6 space-y-5">
           {/* Wallet */}
           <div>
             <label className="block text-[11px] font-medium tracking-widest uppercase text-zinc-500 mb-1.5">
@@ -278,7 +285,7 @@ export default function KycPage() {
 
         {/* Error */}
         {error && (
-          <div className="mt-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-red-400">
+          <div className="relative z-10 mt-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-red-400">
             {error}
           </div>
         )}
@@ -288,7 +295,7 @@ export default function KycPage() {
           type="submit"
           disabled={!isComplete || submitting}
           className={`
-            group relative w-full mt-5 flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl
+            group relative z-10 w-full mt-5 flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl
             font-bold uppercase text-[11px] tracking-[0.2em]
             transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)]
             overflow-hidden

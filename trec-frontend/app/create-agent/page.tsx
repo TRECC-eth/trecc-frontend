@@ -6,14 +6,13 @@ import { useAccount } from 'wagmi';
 import { usePrivy } from '@privy-io/react-auth';
 import {
   Sparkles,
-  Loader2,
-  ArrowLeft,
   Wand2,
   Send,
   Coins,
   Shield,
   Fingerprint,
 } from 'lucide-react';
+import EtheralShadow from '../../components/EtheralShadow';
 
 const SUGGESTED_PROMPT = `You are a DeFi yield optimization agent operating within the TRECC protocol. Your objective is to maximize risk-adjusted returns while maintaining strict capital preservation.
 
@@ -112,11 +111,7 @@ export default function CreateAgentPage() {
 
   if (isCreating) {
     return (
-      <div className="flex flex-col items-center justify-center flex-grow min-h-[85vh] bg-black relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_50%_50%,rgba(255,255,255,0.03),transparent)]" />
-        </div>
-
+      <div className="flex flex-col items-center justify-center flex-grow min-h-[85vh] relative overflow-hidden">
         <div className="relative z-10 flex flex-col items-center gap-8">
           <div className="relative">
             <div className="w-20 h-20 rounded-full border border-white/10 flex items-center justify-center bg-black shadow-[0_0_60px_rgba(255,255,255,0.05)]">
@@ -145,16 +140,13 @@ export default function CreateAgentPage() {
 
   if (!isConnected || !address) {
     return (
-      <div className="flex flex-col items-center justify-center flex-grow min-h-[85vh] bg-black relative">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_120%,rgba(200,200,220,0.12),transparent)]" />
-        </div>
+      <div className={`flex flex-col items-center justify-center flex-grow min-h-[85vh] transition-opacity duration-500 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
         <div className="relative z-10 text-center space-y-8 max-w-md px-4">
           <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto bg-black border border-white/[0.06] shadow-[inset_0_2px_8px_rgba(0,0,0,0.8),0_1px_1px_rgba(255,255,255,0.08)]">
             <Fingerprint className="text-zinc-400" size={28} strokeWidth={1.5} />
           </div>
           <div>
-            <h2 className="text-xl font-medium text-transparent bg-clip-text bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_40%,#999999_100%)] tracking-tight">
+            <h2 className="text-xl font-medium text-zinc-100 tracking-tight">
               Connect to create your agent
             </h2>
             <p className="text-zinc-500 text-sm mt-3 leading-relaxed font-light">
@@ -187,40 +179,37 @@ export default function CreateAgentPage() {
   const isFormValid = prompt.trim().length > 0 && borrowAmount && collateralAmount;
 
   return (
-    <div className="flex flex-col items-center flex-grow relative bg-black min-h-[85vh]">
-      {/* Ambient background */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(200,200,220,0.06),transparent)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_600px_at_30%_20%,rgba(140,145,170,0.04),transparent)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_600px_at_70%_80%,rgba(140,145,170,0.03),transparent)]" />
+    <div
+      className={`flex flex-col items-center justify-start flex-grow px-4 md:px-8 py-8 md:py-16 transition-opacity duration-500 ${mounted ? 'opacity-100' : 'opacity-0'}`}
+    >
+
+      <div className="relative w-full max-w-lg border border-zinc-800 rounded-2xl p-6 md:p-8">
+      <EtheralShadow
+        className="absolute inset-0 rounded-2xl pointer-events-none"
+        color="rgba(80, 80, 80, 0.4)"
+        animation={{ scale: 30, speed: 20 }}
+        noise={{ opacity: 0.3, scale: 1 }}
+      />
+      <div className="relative z-10">
+      {/* Page header — matching capital-provider */}
+      <div className="w-full mb-10">
+        <p className="text-xs font-medium tracking-widest uppercase text-zinc-500 mb-2">
+          Autonomous Agent
+        </p>
+        <h1 className="text-2xl md:text-3xl font-semibold text-zinc-100 tracking-tight leading-tight">
+          Create Your Agent
+        </h1>
+        <p className="text-sm text-zinc-500 mt-2 leading-relaxed max-w-sm">
+          Define the operational mandate for your ERC-8004 identity. This prompt governs how your agent deploys capital on-chain.
+        </p>
       </div>
 
-      <div className="relative z-10 w-full max-w-2xl px-4 py-12 md:py-16">
-        {/* Back */}
-        <button
-          onClick={() => router.push('/')}
-          className="flex items-center gap-2 text-xs font-medium tracking-[0.1em] text-zinc-600 hover:text-zinc-300 transition-colors duration-300 mb-12"
-        >
-          <ArrowLeft size={14} strokeWidth={1.5} /> BACK
-        </button>
-
-        {/* Header */}
-        <div className="mb-12">
-          <h1 className="
-            text-4xl md:text-5xl font-medium tracking-tight leading-tight
-            text-transparent bg-clip-text
-            bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_40%,#8c8c8c_55%,#3a3a3a_100%)]
-          ">
-            Create your agent
-          </h1>
-          <p className="text-zinc-500 mt-4 text-base font-light leading-relaxed max-w-lg">
-            Define the operational mandate for your autonomous ERC-8004 identity.
-            This prompt governs how your agent deploys capital on-chain.
-          </p>
-        </div>
-
+      {/* Form content */}
+      <div
+        className={`w-full border border-zinc-800 rounded-2xl p-5 md:p-6 transition-all duration-500 delay-100 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}
+      >
         {/* Prompt Section */}
-        <div className="mb-10">
+        <div className="mb-8">
           <div className="flex items-center justify-between mb-3">
             <label className="text-xs font-medium text-zinc-500 uppercase tracking-widest">
               Agent Directive
@@ -244,9 +233,9 @@ export default function CreateAgentPage() {
 
           <div className="
             relative rounded-2xl overflow-hidden
-            bg-[#080808] border border-white/[0.06]
-            shadow-[0_20px_50px_-15px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.03)]
-            focus-within:border-white/[0.12] focus-within:shadow-[0_20px_50px_-15px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.06),0_0_0_1px_rgba(255,255,255,0.04)]
+            bg-[#080808] border border-zinc-800
+            shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]
+            focus-within:border-zinc-700
             transition-all duration-500
           ">
             <textarea
@@ -257,14 +246,12 @@ export default function CreateAgentPage() {
               rows={4}
               className="
                 w-full bg-transparent text-white/90 placeholder-zinc-700 text-sm leading-relaxed font-light
-                px-5 pt-5 pb-14 resize-none
+                px-5 pt-5 pb-14 resize-none overflow-y-auto
                 focus:outline-none
-                scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent
               "
               style={{ minHeight: '140px', maxHeight: '320px' }}
             />
 
-            {/* Bottom bar inside textarea */}
             <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between px-4 py-3 bg-gradient-to-t from-[#080808] via-[#080808]/95 to-transparent">
               <span className="text-[10px] text-zinc-700 tabular-nums tracking-wide">
                 {prompt.length > 0 ? `${prompt.length} chars` : ''}
@@ -278,10 +265,9 @@ export default function CreateAgentPage() {
         </div>
 
         {/* Amount Fields */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-12">
-          {/* Borrow Amount */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           <div>
-            <label className="flex items-center gap-2 text-xs font-medium text-zinc-500 uppercase tracking-widest mb-3">
+            <label className="flex items-center gap-2 text-xs font-medium text-zinc-500 uppercase tracking-widest mb-2">
               <Coins size={12} className="text-zinc-600" />
               Borrow Amount
             </label>
@@ -307,9 +293,8 @@ export default function CreateAgentPage() {
             </div>
           </div>
 
-          {/* Collateral Amount */}
           <div>
-            <label className="flex items-center gap-2 text-xs font-medium text-zinc-500 uppercase tracking-widest mb-3">
+            <label className="flex items-center gap-2 text-xs font-medium text-zinc-500 uppercase tracking-widest mb-2">
               <Shield size={12} className="text-zinc-600" />
               Collateral Amount
             </label>
@@ -338,7 +323,7 @@ export default function CreateAgentPage() {
 
         {/* Collateral ratio indicator */}
         {borrowAmount && collateralAmount && parseFloat(borrowAmount) > 0 && (
-          <div className="mb-12 -mt-6 flex items-center gap-3 px-1">
+          <div className="mb-6 flex items-center gap-3 px-1">
             <div className="flex-1 h-px bg-gradient-to-r from-transparent via-zinc-800 to-transparent" />
             <span className="text-[10px] text-zinc-600 uppercase tracking-widest tabular-nums">
               {((parseFloat(collateralAmount) / parseFloat(borrowAmount)) * 100).toFixed(0)}% collateral ratio
@@ -369,7 +354,6 @@ export default function CreateAgentPage() {
             active:shadow-[0_5px_10px_-2px_rgba(0,0,0,0.8),inset_0_2px_4px_rgba(0,0,0,0.3),inset_0_-2px_4px_rgba(255,255,255,0.3)]
           "
         >
-          {/* Sweeping light glare */}
           <div className="absolute top-0 -left-[100%] w-[50%] h-full bg-gradient-to-r from-transparent via-white/80 to-transparent skew-x-[-45deg] group-hover:left-[200%] transition-all duration-1000 ease-in-out pointer-events-none" />
 
           <span className="relative z-10 flex items-center justify-center gap-3">
@@ -378,11 +362,8 @@ export default function CreateAgentPage() {
             <Send size={14} strokeWidth={2} />
           </span>
         </button>
-
-        {/* Subtext */}
-        <p className="text-center text-[10px] text-zinc-700 uppercase tracking-[0.15em] mt-6 font-light">
-          Deploys a Safe smart account with TRECC guardrails on Base Sepolia
-        </p>
+      </div>
+      </div>
       </div>
     </div>
   );

@@ -70,3 +70,33 @@ input[type="number"] {
 
 .animate-dropdown-in > *:nth-child(1) { animation-delay: 0.03s; }
 .animate-dropdown-in > *:nth-child(2) { animation-delay: 0.08s; }
+
+/* Dark scrollbar */
+@layer base {
+  *, textarea, div {
+    scrollbar-width: thin !important;
+    scrollbar-color: #27272a transparent !important;
+  }
+  *::-webkit-scrollbar,
+  textarea::-webkit-scrollbar,
+  div::-webkit-scrollbar {
+    width: 6px !important;
+    height: 6px !important;
+  }
+  *::-webkit-scrollbar-track,
+  textarea::-webkit-scrollbar-track,
+  div::-webkit-scrollbar-track {
+    background: transparent !important;
+  }
+  *::-webkit-scrollbar-thumb,
+  textarea::-webkit-scrollbar-thumb,
+  div::-webkit-scrollbar-thumb {
+    background: #27272a !important;
+    border-radius: 3px !important;
+  }
+  *::-webkit-scrollbar-thumb:hover,
+  textarea::-webkit-scrollbar-thumb:hover,
+  div::-webkit-scrollbar-thumb:hover {
+    background: #3f3f46 !important;
+  }
+}
