@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "./provider";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import MobileGate from "../components/MobileGate";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,9 +22,11 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.className} bg-slate-950 text-white min-h-screen flex flex-col`}>
         <Providers>
-          <Navbar />
-          <main className="flex-grow flex flex-col pt-24">{children}</main>
-          <Footer />
+          <MobileGate>
+            <Navbar />
+            <main className="flex-grow flex flex-col pt-24">{children}</main>
+            <Footer />
+          </MobileGate>
         </Providers>
       </body>
     </html>
