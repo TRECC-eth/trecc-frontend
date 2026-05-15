@@ -175,153 +175,152 @@ export default function KycPage() {
           className={`relative w-full transition-all duration-500 delay-150 ${animateIn ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}
         >
           <div className="relative z-10 space-y-5">
-          {/* Wallet */}
-          <div>
-            <label className="block text-[11px] font-medium tracking-widest uppercase text-zinc-500 mb-1.5">
-              Wallet
-            </label>
-            <div className="px-4 py-3 rounded-xl bg-zinc-800/60 border border-white/[0.04] text-sm font-mono text-zinc-400">
-              {address}
-            </div>
-          </div>
-
-          {/* Full Name */}
-          <div>
-            <label className="block text-[11px] font-medium tracking-widest uppercase text-zinc-500 mb-1.5">
-              Full Legal Name
-            </label>
-            <input
-              type="text"
-              value={form.fullName}
-              onChange={(e) => update('fullName', e.target.value)}
-              placeholder="As it appears on your ID"
-              className="w-full px-4 py-3 rounded-xl bg-zinc-800/60 border border-white/[0.06] text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-white/[0.15] focus:ring-1 focus:ring-white/[0.08] transition-colors"
-            />
-          </div>
-
-          {/* Email */}
-          <div>
-            <label className="block text-[11px] font-medium tracking-widest uppercase text-zinc-500 mb-1.5">
-              Email
-            </label>
-            <input
-              type="email"
-              value={form.email}
-              onChange={(e) => update('email', e.target.value)}
-              placeholder="you@example.com"
-              className="w-full px-4 py-3 rounded-xl bg-zinc-800/60 border border-white/[0.06] text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-white/[0.15] focus:ring-1 focus:ring-white/[0.08] transition-colors"
-            />
-          </div>
-
-          {/* Date of Birth */}
-          <div>
-            <label className="block text-[11px] font-medium tracking-widest uppercase text-zinc-500 mb-1.5">
-              Date of Birth
-            </label>
-            <input
-              type="date"
-              value={form.dateOfBirth}
-              onChange={(e) => update('dateOfBirth', e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-zinc-800/60 border border-white/[0.06] text-sm text-zinc-200 focus:outline-none focus:border-white/[0.15] focus:ring-1 focus:ring-white/[0.08] transition-colors [color-scheme:dark]"
-            />
-          </div>
-
-          {/* Country */}
-          <div>
-            <label className="block text-[11px] font-medium tracking-widest uppercase text-zinc-500 mb-1.5">
-              Country of Residence
-            </label>
-            <select
-              value={form.country}
-              onChange={(e) => update('country', e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-zinc-800/60 border border-white/[0.06] text-sm text-zinc-200 focus:outline-none focus:border-white/[0.15] focus:ring-1 focus:ring-white/[0.08] transition-colors appearance-none cursor-pointer"
-            >
-              <option value="" disabled className="bg-zinc-900 text-zinc-500">
-                Select country
-              </option>
-              {COUNTRIES.map((c) => (
-                <option key={c} value={c} className="bg-zinc-900 text-zinc-200">
-                  {c}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* ID Type & Number — side by side */}
-          <div className="grid grid-cols-2 gap-3">
+            {/* Wallet */}
             <div>
               <label className="block text-[11px] font-medium tracking-widest uppercase text-zinc-500 mb-1.5">
-                ID Type
+                Wallet
+              </label>
+              <div className="px-4 py-3 rounded-xl bg-zinc-800/60 border border-white/[0.04] text-sm font-mono text-zinc-400">
+                {address}
+              </div>
+            </div>
+
+            {/* Full Name */}
+            <div>
+              <label className="block text-[11px] font-medium tracking-widest uppercase text-zinc-500 mb-1.5">
+                Full Legal Name
+              </label>
+              <input
+                type="text"
+                value={form.fullName}
+                onChange={(e) => update('fullName', e.target.value)}
+                placeholder="As it appears on your ID"
+                className="w-full px-4 py-3 rounded-xl bg-zinc-800/60 border border-white/[0.06] text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-white/[0.15] focus:ring-1 focus:ring-white/[0.08] transition-colors"
+              />
+            </div>
+
+            {/* Email */}
+            <div>
+              <label className="block text-[11px] font-medium tracking-widest uppercase text-zinc-500 mb-1.5">
+                Email
+              </label>
+              <input
+                type="email"
+                value={form.email}
+                onChange={(e) => update('email', e.target.value)}
+                placeholder="you@example.com"
+                className="w-full px-4 py-3 rounded-xl bg-zinc-800/60 border border-white/[0.06] text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-white/[0.15] focus:ring-1 focus:ring-white/[0.08] transition-colors"
+              />
+            </div>
+
+            {/* Date of Birth */}
+            <div>
+              <label className="block text-[11px] font-medium tracking-widest uppercase text-zinc-500 mb-1.5">
+                Date of Birth
+              </label>
+              <input
+                type="date"
+                value={form.dateOfBirth}
+                onChange={(e) => update('dateOfBirth', e.target.value)}
+                className="w-full px-4 py-3 rounded-xl bg-zinc-800/60 border border-white/[0.06] text-sm text-zinc-200 focus:outline-none focus:border-white/[0.15] focus:ring-1 focus:ring-white/[0.08] transition-colors [color-scheme:dark]"
+              />
+            </div>
+
+            {/* Country */}
+            <div>
+              <label className="block text-[11px] font-medium tracking-widest uppercase text-zinc-500 mb-1.5">
+                Country of Residence
               </label>
               <select
-                value={form.idType}
-                onChange={(e) => update('idType', e.target.value)}
+                value={form.country}
+                onChange={(e) => update('country', e.target.value)}
                 className="w-full px-4 py-3 rounded-xl bg-zinc-800/60 border border-white/[0.06] text-sm text-zinc-200 focus:outline-none focus:border-white/[0.15] focus:ring-1 focus:ring-white/[0.08] transition-colors appearance-none cursor-pointer"
               >
                 <option value="" disabled className="bg-zinc-900 text-zinc-500">
-                  Select
+                  Select country
                 </option>
-                {ID_TYPES.map((t) => (
-                  <option key={t} value={t} className="bg-zinc-900 text-zinc-200">
-                    {t}
+                {COUNTRIES.map((c) => (
+                  <option key={c} value={c} className="bg-zinc-900 text-zinc-200">
+                    {c}
                   </option>
                 ))}
               </select>
             </div>
-            <div>
-              <label className="block text-[11px] font-medium tracking-widest uppercase text-zinc-500 mb-1.5">
-                ID Number
-              </label>
-              <input
-                type="text"
-                value={form.idNumber}
-                onChange={(e) => update('idNumber', e.target.value)}
-                placeholder="Document number"
-                className="w-full px-4 py-3 rounded-xl bg-zinc-800/60 border border-white/[0.06] text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-white/[0.15] focus:ring-1 focus:ring-white/[0.08] transition-colors"
-              />
+
+            {/* ID Type & Number — side by side */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[11px] font-medium tracking-widest uppercase text-zinc-500 mb-1.5">
+                  ID Type
+                </label>
+                <select
+                  value={form.idType}
+                  onChange={(e) => update('idType', e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-zinc-800/60 border border-white/[0.06] text-sm text-zinc-200 focus:outline-none focus:border-white/[0.15] focus:ring-1 focus:ring-white/[0.08] transition-colors appearance-none cursor-pointer"
+                >
+                  <option value="" disabled className="bg-zinc-900 text-zinc-500">
+                    Select
+                  </option>
+                  {ID_TYPES.map((t) => (
+                    <option key={t} value={t} className="bg-zinc-900 text-zinc-200">
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[11px] font-medium tracking-widest uppercase text-zinc-500 mb-1.5">
+                  ID Number
+                </label>
+                <input
+                  type="text"
+                  value={form.idNumber}
+                  onChange={(e) => update('idNumber', e.target.value)}
+                  placeholder="Document number"
+                  className="w-full px-4 py-3 rounded-xl bg-zinc-800/60 border border-white/[0.06] text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-white/[0.15] focus:ring-1 focus:ring-white/[0.08] transition-colors"
+                />
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Error */}
-        {error && (
-          <div className="relative z-10 mt-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-red-400">
-            {error}
-          </div>
-        )}
+          {/* Error */}
+          {error && (
+            <div className="relative z-10 mt-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-red-400">
+              {error}
+            </div>
+          )}
 
-        {/* Submit Button */}
-        <button
-          type="submit"
-          disabled={!isComplete || submitting}
-          className={`
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={!isComplete || submitting}
+            className={`
             group relative z-10 w-full mt-5 flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl
             font-bold uppercase text-[11px] tracking-[0.2em]
             transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)]
             overflow-hidden
-            ${
-              isComplete && !submitting
+            ${isComplete && !submitting
                 ? 'text-zinc-800 [text-shadow:0_1px_0_rgba(255,255,255,0.9)] bg-[linear-gradient(180deg,#ffffff_0%,#e2e2e2_25%,#999999_45%,#d4d4d4_55%,#737373_100%)] border border-black/10 ring-1 ring-inset ring-white/30 shadow-[0_15px_25px_-5px_rgba(0,0,0,0.6),inset_0_3px_5px_rgba(255,255,255,0.9),inset_0_-3px_6px_rgba(0,0,0,0.25)] hover:-translate-y-[1px] hover:shadow-[0_20px_35px_-5px_rgba(0,0,0,0.7),inset_0_4px_6px_rgba(255,255,255,1),inset_0_-3px_6px_rgba(0,0,0,0.2)] active:translate-y-[1px] active:scale-[0.98]'
                 : 'text-zinc-600 bg-zinc-800/60 border border-white/[0.04] cursor-not-allowed'
-            }
+              }
           `}
-        >
-          {isComplete && !submitting && (
-            <div className="absolute top-0 -left-[100%] w-[50%] h-full bg-gradient-to-r from-transparent via-white/80 to-transparent skew-x-[-45deg] group-hover:left-[200%] transition-all duration-1000 ease-in-out pointer-events-none" />
-          )}
-          {submitting ? (
-            <>
-              <Loader2 size={14} className="relative z-10 animate-spin" />
-              <span className="relative z-10">Submitting…</span>
-            </>
-          ) : (
-            <>
-              <span className="relative z-10">Submit Verification</span>
-              <ChevronRight size={14} className="relative z-10" />
-            </>
-          )}
-        </button>
-      </form>
+          >
+            {isComplete && !submitting && (
+              <div className="absolute top-0 -left-[100%] w-[50%] h-full bg-gradient-to-r from-transparent via-white/80 to-transparent skew-x-[-45deg] group-hover:left-[200%] transition-all duration-1000 ease-in-out pointer-events-none" />
+            )}
+            {submitting ? (
+              <>
+                <Loader2 size={14} className="relative z-10 animate-spin" />
+                <span className="relative z-10">Submitting…</span>
+              </>
+            ) : (
+              <>
+                <span className="relative z-10">Submit Verification</span>
+                <ChevronRight size={14} className="relative z-10" />
+              </>
+            )}
+          </button>
+        </form>
       </div>
     </div>
   );

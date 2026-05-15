@@ -189,153 +189,153 @@ export default function CreateAgentPage() {
     >
 
       <div className="relative w-full max-w-lg bg-zinc-950/80 backdrop-blur-md border border-zinc-800 rounded-2xl p-6 md:p-8">
-      <div className="relative z-10">
-      {/* Page header — matching capital-provider */}
-      <div className="w-full mb-10">
-        <p className="text-xs font-medium tracking-widest uppercase text-zinc-500 mb-2">
-          Autonomous Agent
-        </p>
-        <h1 className="text-2xl md:text-3xl font-semibold text-zinc-100 tracking-tight leading-tight">
-          Create Your Agent
-        </h1>
-        <p className="text-sm text-zinc-500 mt-2 leading-relaxed max-w-sm">
-          Define the operational mandate for your ERC-8004 identity. This prompt governs how your agent deploys capital on-chain.
-        </p>
-      </div>
+        <div className="relative z-10">
+          {/* Page header — matching capital-provider */}
+          <div className="w-full mb-10">
+            <p className="text-xs font-medium tracking-widest uppercase text-zinc-500 mb-2">
+              Autonomous Agent
+            </p>
+            <h1 className="text-2xl md:text-3xl font-semibold text-zinc-100 tracking-tight leading-tight">
+              Create Your Agent
+            </h1>
+            <p className="text-sm text-zinc-500 mt-2 leading-relaxed max-w-sm">
+              Define the operational mandate for your ERC-8004 identity. This prompt governs how your agent deploys capital on-chain.
+            </p>
+          </div>
 
-      {/* Form content */}
-      <div
-        className={`w-full bg-zinc-950/40 border border-zinc-800 rounded-2xl p-5 md:p-6 transition-all duration-500 delay-150 ${animateIn ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}
-      >
-        {/* Prompt Section */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-3">
-            <label className="text-xs font-medium text-zinc-500 uppercase tracking-widest">
-              Agent Directive
-            </label>
-            <button
-              type="button"
-              onClick={handleApplyTemplate}
-              className={`
+          {/* Form content */}
+          <div
+            className={`w-full bg-zinc-950/40 border border-zinc-800 rounded-2xl p-5 md:p-6 transition-all duration-500 delay-150 ${animateIn ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}
+          >
+            {/* Prompt Section */}
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-3">
+                <label className="text-xs font-medium text-zinc-500 uppercase tracking-widest">
+                  Agent Directive
+                </label>
+                <button
+                  type="button"
+                  onClick={handleApplyTemplate}
+                  className={`
                 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest
                 transition-all duration-500
                 ${templateApplied
-                  ? 'bg-white/10 text-white border border-white/20'
-                  : 'bg-white/[0.03] text-zinc-500 border border-white/[0.06] hover:bg-white/[0.06] hover:text-zinc-300 hover:border-white/10'
-                }
+                      ? 'bg-white/10 text-white border border-white/20'
+                      : 'bg-white/[0.03] text-zinc-500 border border-white/[0.06] hover:bg-white/[0.06] hover:text-zinc-300 hover:border-white/10'
+                    }
               `}
-            >
-              <Wand2 size={10} />
-              {templateApplied ? 'Applied' : 'Use template'}
-            </button>
-          </div>
+                >
+                  <Wand2 size={10} />
+                  {templateApplied ? 'Applied' : 'Use template'}
+                </button>
+              </div>
 
-          <div className="
+              <div className="
             relative rounded-2xl overflow-hidden
             bg-[#080808] border border-zinc-800
             shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]
             focus-within:border-zinc-700
             transition-all duration-500
           ">
-            <textarea
-              ref={textareaRef}
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Describe your agent's strategy, risk tolerance, preferred protocols, and behavioral constraints..."
-              rows={4}
-              className="
+                <textarea
+                  ref={textareaRef}
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  placeholder="Describe your agent's strategy, risk tolerance, preferred protocols, and behavioral constraints..."
+                  rows={4}
+                  className="
                 w-full bg-transparent text-white/90 placeholder-zinc-700 text-sm leading-relaxed font-light
                 px-5 pt-5 pb-14 resize-none overflow-y-auto
                 focus:outline-none
               "
-              style={{ minHeight: '140px', maxHeight: '320px' }}
-            />
+                  style={{ minHeight: '140px', maxHeight: '320px' }}
+                />
 
-            <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between px-4 py-3 bg-gradient-to-t from-[#080808] via-[#080808]/95 to-transparent">
-              <span className="text-[10px] text-zinc-700 tabular-nums tracking-wide">
-                {prompt.length > 0 ? `${prompt.length} chars` : ''}
-              </span>
-              <div className="flex items-center gap-1.5">
-                <Sparkles size={10} className="text-zinc-600" />
-                <span className="text-[10px] text-zinc-600">AI-powered agent</span>
+                <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between px-4 py-3 bg-gradient-to-t from-[#080808] via-[#080808]/95 to-transparent">
+                  <span className="text-[10px] text-zinc-700 tabular-nums tracking-wide">
+                    {prompt.length > 0 ? `${prompt.length} chars` : ''}
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles size={10} className="text-zinc-600" />
+                    <span className="text-[10px] text-zinc-600">AI-powered agent</span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Amount Fields */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-          <div>
-            <label className="flex items-center gap-2 text-xs font-medium text-zinc-500 uppercase tracking-widest mb-2">
-              <Coins size={12} className="text-zinc-600" />
-              Borrow Amount
-            </label>
-            <div className="relative">
-              <input
-                type="number"
-                value={borrowAmount}
-                onChange={(e) => setBorrowAmount(e.target.value)}
-                placeholder="0.00"
-                min="0"
-                step="any"
-                className="
+            {/* Amount Fields */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+              <div>
+                <label className="flex items-center gap-2 text-xs font-medium text-zinc-500 uppercase tracking-widest mb-2">
+                  <Coins size={12} className="text-zinc-600" />
+                  Borrow Amount
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={borrowAmount}
+                    onChange={(e) => setBorrowAmount(e.target.value)}
+                    placeholder="0.00"
+                    min="0"
+                    step="any"
+                    className="
                   w-full bg-[#080808] border border-white/[0.06] rounded-2xl
                   px-5 py-4 pr-20 text-white placeholder-zinc-700 text-sm font-light
                   focus:outline-none focus:border-white/[0.12]
                   shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]
                   transition-all duration-300
                 "
-              />
-              <span className="absolute right-5 top-1/2 -translate-y-1/2 text-[10px] font-bold uppercase tracking-widest text-zinc-600">
-                USDC
-              </span>
-            </div>
-          </div>
+                  />
+                  <span className="absolute right-5 top-1/2 -translate-y-1/2 text-[10px] font-bold uppercase tracking-widest text-zinc-600">
+                    USDC
+                  </span>
+                </div>
+              </div>
 
-          <div>
-            <label className="flex items-center gap-2 text-xs font-medium text-zinc-500 uppercase tracking-widest mb-2">
-              <Shield size={12} className="text-zinc-600" />
-              Collateral Amount
-            </label>
-            <div className="relative">
-              <input
-                type="number"
-                value={collateralAmount}
-                onChange={(e) => setCollateralAmount(e.target.value)}
-                placeholder="0.00"
-                min="0"
-                step="any"
-                className="
+              <div>
+                <label className="flex items-center gap-2 text-xs font-medium text-zinc-500 uppercase tracking-widest mb-2">
+                  <Shield size={12} className="text-zinc-600" />
+                  Collateral Amount
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={collateralAmount}
+                    onChange={(e) => setCollateralAmount(e.target.value)}
+                    placeholder="0.00"
+                    min="0"
+                    step="any"
+                    className="
                   w-full bg-[#080808] border border-white/[0.06] rounded-2xl
                   px-5 py-4 pr-20 text-white placeholder-zinc-700 text-sm font-light
                   focus:outline-none focus:border-white/[0.12]
                   shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]
                   transition-all duration-300
                 "
-              />
-              <span className="absolute right-5 top-1/2 -translate-y-1/2 text-[10px] font-bold uppercase tracking-widest text-zinc-600">
-                USDC
-              </span>
+                  />
+                  <span className="absolute right-5 top-1/2 -translate-y-1/2 text-[10px] font-bold uppercase tracking-widest text-zinc-600">
+                    USDC
+                  </span>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
-        {/* Collateral ratio indicator */}
-        {borrowAmount && collateralAmount && parseFloat(borrowAmount) > 0 && (
-          <div className="mb-6 flex items-center gap-3 px-1">
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-zinc-800 to-transparent" />
-            <span className="text-[10px] text-zinc-600 uppercase tracking-widest tabular-nums">
-              {((parseFloat(collateralAmount) / parseFloat(borrowAmount)) * 100).toFixed(0)}% collateral ratio
-            </span>
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-zinc-800 to-transparent" />
-          </div>
-        )}
+            {/* Collateral ratio indicator */}
+            {borrowAmount && collateralAmount && parseFloat(borrowAmount) > 0 && (
+              <div className="mb-6 flex items-center gap-3 px-1">
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-zinc-800 to-transparent" />
+                <span className="text-[10px] text-zinc-600 uppercase tracking-widest tabular-nums">
+                  {((parseFloat(collateralAmount) / parseFloat(borrowAmount)) * 100).toFixed(0)}% collateral ratio
+                </span>
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-zinc-800 to-transparent" />
+              </div>
+            )}
 
-        {/* Create Button */}
-        <button
-          onClick={handleCreate}
-          disabled={!isFormValid}
-          className="
+            {/* Create Button */}
+            <button
+              onClick={handleCreate}
+              disabled={!isFormValid}
+              className="
             group relative w-full py-5 rounded-2xl
             font-bold uppercase text-[12px] tracking-[0.25em]
             overflow-hidden
@@ -352,17 +352,17 @@ export default function CreateAgentPage() {
             active:bg-[linear-gradient(180deg,#e2e2e2_0%,#cccccc_25%,#808080_45%,#b3b3b3_55%,#595959_100%)]
             active:shadow-[0_5px_10px_-2px_rgba(0,0,0,0.8),inset_0_2px_4px_rgba(0,0,0,0.3),inset_0_-2px_4px_rgba(255,255,255,0.3)]
           "
-        >
-          <div className="absolute top-0 -left-[100%] w-[50%] h-full bg-gradient-to-r from-transparent via-white/80 to-transparent skew-x-[-45deg] group-hover:left-[200%] transition-all duration-1000 ease-in-out pointer-events-none" />
+            >
+              <div className="absolute top-0 -left-[100%] w-[50%] h-full bg-gradient-to-r from-transparent via-white/80 to-transparent skew-x-[-45deg] group-hover:left-[200%] transition-all duration-1000 ease-in-out pointer-events-none" />
 
-          <span className="relative z-10 flex items-center justify-center gap-3">
-            <Fingerprint size={18} strokeWidth={1.5} />
-            Create Your Identity
-            <Send size={14} strokeWidth={2} />
-          </span>
-        </button>
-      </div>
-      </div>
+              <span className="relative z-10 flex items-center justify-center gap-3">
+                <Fingerprint size={18} strokeWidth={1.5} />
+                Create Your Identity
+                <Send size={14} strokeWidth={2} />
+              </span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
