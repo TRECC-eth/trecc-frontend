@@ -57,15 +57,16 @@ export default function EtheralShadow({
             if (hueRotateAnimation.current) {
                 hueRotateAnimation.current.stop();
             }
-            hueRotateMotionValue.set(0);
-            hueRotateAnimation.current = animate(hueRotateMotionValue, 360, {
+            
+            hueRotateAnimation.current = animate(0, 360, {
                 duration: animationDuration / 25,
                 repeat: Infinity,
                 repeatType: 'loop',
                 repeatDelay: 0,
                 ease: 'linear',
                 delay: 0,
-                onUpdate: (value: number) => {
+                onUpdate: (value) => {
+                    hueRotateMotionValue.set(value);
                     if (feColorMatrixRef.current) {
                         feColorMatrixRef.current.setAttribute('values', String(value));
                     }
