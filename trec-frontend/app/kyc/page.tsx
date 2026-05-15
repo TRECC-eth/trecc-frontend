@@ -7,7 +7,6 @@ import { Shield, ChevronRight, CheckCircle, Loader2 } from 'lucide-react';
 import { submitKyc } from '../../lib/kyc';
 import { AGENT_REGISTRY_ADDRESS } from '../../constants/production-addresses';
 import { REGISTRY_ABI } from '../../constants/abi/registryAbi';
-import EtheralShadow from '../../components/EtheralShadow';
 
 const SEPOLIA_CHAIN_ID = 11155111;
 
@@ -31,6 +30,7 @@ export default function KycPage() {
   const router = useRouter();
   const { address, isConnected } = useAccount();
   const [mounted, setMounted] = useState(false);
+  const [animateIn, setAnimateIn] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,7 +52,12 @@ export default function KycPage() {
     query: { enabled: !!address },
   });
 
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    setMounted(true);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => setAnimateIn(true));
+    });
+  }, []);
 
   useEffect(() => {
     if (!balanceLoading && agentBalance && Number(agentBalance) > 0) {
@@ -126,7 +131,7 @@ export default function KycPage() {
   if (submitted) {
     return (
       <div
-        className={`flex flex-col items-center justify-center flex-grow px-4 py-16 transition-opacity duration-500 ${mounted ? 'opacity-100' : 'opacity-0'}`}
+        className={`flex flex-col items-center justify-center flex-grow px-4 py-16 transition-opacity duration-500 ${animateIn ? 'opacity-100' : 'opacity-0'}`}
       >
         <div className="w-full max-w-lg text-center">
           <CheckCircle className="w-12 h-12 text-emerald-400 mx-auto mb-5" />
@@ -147,34 +152,29 @@ export default function KycPage() {
 
   return (
     <div
-      className={`flex flex-col items-center justify-start flex-grow px-4 md:px-8 py-8 md:py-16 transition-opacity duration-500 ${mounted ? 'opacity-100' : 'opacity-0'}`}
+      className={`flex flex-col items-center justify-start flex-grow px-4 md:px-8 py-8 md:py-16 transition-all duration-500 ${animateIn ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
     >
-      {/* Header */}
-      <div className="w-full max-w-lg mb-10">
-        <p className="text-xs font-medium tracking-widest uppercase text-zinc-500 mb-2">
-          Identity Verification
-        </p>
-        <h1 className="text-2xl md:text-3xl font-semibold text-zinc-100 tracking-tight leading-tight">
-          Complete KYC
-        </h1>
-        <p className="text-sm text-zinc-500 mt-2 leading-relaxed max-w-sm">
-          Verify your identity to access borrowing. Your data is encrypted and
-          never stored on-chain.
-        </p>
-      </div>
+      <div className="w-full max-w-lg bg-zinc-950/80 backdrop-blur-md border border-zinc-800 rounded-2xl p-6 md:p-8">
+        {/* Header */}
+        <div className="w-full mb-10">
+          <p className="text-xs font-medium tracking-widest uppercase text-zinc-500 mb-2">
+            Identity Verification
+          </p>
+          <h1 className="text-2xl md:text-3xl font-semibold text-zinc-100 tracking-tight leading-tight">
+            Complete KYC
+          </h1>
+          <p className="text-sm text-zinc-500 mt-2 leading-relaxed max-w-sm">
+            Verify your identity to access borrowing. Your data is encrypted and
+            never stored on-chain.
+          </p>
+        </div>
 
-      {/* Form Card */}
-      <form
-        onSubmit={handleSubmit}
-        className={`relative w-full max-w-lg transition-all duration-500 delay-100 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}
-      >
-        <EtheralShadow
-          className="absolute inset-0 rounded-2xl pointer-events-none"
-          color="rgba(80, 80, 80, 0.4)"
-          animation={{ scale: 30, speed: 20 }}
-          noise={{ opacity: 0.3, scale: 1 }}
-        />
-        <div className="relative z-10 rounded-2xl border border-white/[0.06] bg-zinc-900/60 backdrop-blur-xl shadow-[0_20px_40px_-10px_rgba(0,0,0,0.8)] p-6 space-y-5">
+        {/* Form Card */}
+        <form
+          onSubmit={handleSubmit}
+          className={`relative w-full transition-all duration-500 delay-150 ${animateIn ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}
+        >
+          <div className="relative z-10 space-y-5">
           {/* Wallet */}
           <div>
             <label className="block text-[11px] font-medium tracking-widest uppercase text-zinc-500 mb-1.5">
@@ -322,6 +322,7 @@ export default function KycPage() {
           )}
         </button>
       </form>
+      </div>
     </div>
   );
 }

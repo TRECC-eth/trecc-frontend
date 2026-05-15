@@ -12,7 +12,6 @@ import {
   Shield,
   Fingerprint,
 } from 'lucide-react';
-import EtheralShadow from '../../components/EtheralShadow';
 
 const SUGGESTED_PROMPT = `You are a DeFi yield optimization agent operating within the TRECC protocol. Your objective is to maximize risk-adjusted returns while maintaining strict capital preservation.
 
@@ -36,6 +35,7 @@ export default function CreateAgentPage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [mounted, setMounted] = useState(false);
+  const [animateIn, setAnimateIn] = useState(false);
   const [prompt, setPrompt] = useState('');
   const [borrowAmount, setBorrowAmount] = useState('');
   const [collateralAmount, setCollateralAmount] = useState('');
@@ -43,7 +43,12 @@ export default function CreateAgentPage() {
   const [creationPhase, setCreationPhase] = useState('');
   const [templateApplied, setTemplateApplied] = useState(false);
 
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    setMounted(true);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => setAnimateIn(true));
+    });
+  }, []);
 
   const autoResizeTextarea = useCallback(() => {
     const el = textareaRef.current;
@@ -140,7 +145,7 @@ export default function CreateAgentPage() {
 
   if (!isConnected || !address) {
     return (
-      <div className={`flex flex-col items-center justify-center flex-grow min-h-[85vh] transition-opacity duration-500 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
+      <div className={`flex flex-col items-center justify-center flex-grow min-h-[85vh] transition-opacity duration-500 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
         <div className="relative z-10 text-center space-y-8 max-w-md px-4">
           <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto bg-black border border-white/[0.06] shadow-[inset_0_2px_8px_rgba(0,0,0,0.8),0_1px_1px_rgba(255,255,255,0.08)]">
             <Fingerprint className="text-zinc-400" size={28} strokeWidth={1.5} />
@@ -180,16 +185,10 @@ export default function CreateAgentPage() {
 
   return (
     <div
-      className={`flex flex-col items-center justify-start flex-grow px-4 md:px-8 py-8 md:py-16 transition-opacity duration-500 ${mounted ? 'opacity-100' : 'opacity-0'}`}
+      className={`flex flex-col items-center justify-start flex-grow px-4 md:px-8 py-8 md:py-16 transition-all duration-500 ${animateIn ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
     >
 
-      <div className="relative w-full max-w-lg border border-zinc-800 rounded-2xl p-6 md:p-8">
-      <EtheralShadow
-        className="absolute inset-0 rounded-2xl pointer-events-none"
-        color="rgba(80, 80, 80, 0.4)"
-        animation={{ scale: 30, speed: 20 }}
-        noise={{ opacity: 0.3, scale: 1 }}
-      />
+      <div className="relative w-full max-w-lg bg-zinc-950/80 backdrop-blur-md border border-zinc-800 rounded-2xl p-6 md:p-8">
       <div className="relative z-10">
       {/* Page header — matching capital-provider */}
       <div className="w-full mb-10">
@@ -206,7 +205,7 @@ export default function CreateAgentPage() {
 
       {/* Form content */}
       <div
-        className={`w-full border border-zinc-800 rounded-2xl p-5 md:p-6 transition-all duration-500 delay-100 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}
+        className={`w-full bg-zinc-950/40 border border-zinc-800 rounded-2xl p-5 md:p-6 transition-all duration-500 delay-150 ${animateIn ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}
       >
         {/* Prompt Section */}
         <div className="mb-8">

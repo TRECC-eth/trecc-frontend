@@ -16,10 +16,10 @@ export default function CapitalProviderPage() {
 
   return (
     <div
-      className={`flex flex-col items-center justify-start flex-grow px-4 md:px-8 py-8 md:py-16 transition-opacity duration-500 ${mounted ? 'opacity-100' : 'opacity-0'}`}
+      className={`flex flex-col items-center justify-start flex-grow px-4 md:px-8 py-8 md:py-16 transition-all duration-500 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
     >
 
-      <div className="w-full max-w-lg border border-zinc-800 rounded-2xl p-8">
+      <div className="w-full max-w-lg bg-zinc-950/80 backdrop-blur-md border border-zinc-800 rounded-2xl p-8">
         {/* Page header — left-aligned, no decorative icon */}
         <div className="mb-10">
           <p className="text-xs font-medium tracking-widest uppercase text-zinc-500 mb-2">
@@ -35,7 +35,7 @@ export default function CapitalProviderPage() {
 
         {/* Vault component */}
         <div
-          className={`transition-all duration-500 delay-100 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}
+          className={`transition-all duration-500 delay-150 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}
         >
           <LenderVault onDepositSuccess={handleDepositSuccess} />
         </div>

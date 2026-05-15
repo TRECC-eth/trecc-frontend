@@ -122,7 +122,7 @@ export default function LenderVault({ onDepositSuccess }: LenderVaultProps) {
   const isActive = step !== 'idle';
 
   return (
-    <div className="w-full space-y-4 border border-zinc-800 rounded-2xl p-6">
+    <div className="w-full space-y-4 bg-zinc-950 border border-zinc-800 rounded-2xl p-6">
       {/* TVL bar */}
       <div className="flex items-center justify-between px-1 py-3 rounded-xl">
         <span className="font-bold text-xl text-zinc-300">Protocol TVL</span>
