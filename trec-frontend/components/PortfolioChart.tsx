@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { LivelinePoint } from 'liveline';
 
 const WINDOWS = [
@@ -99,8 +99,64 @@ export default function PortfolioChart({ data, value }: PortfolioChartProps) {
   const [dragStartX, setDragStartX] = useState<number | null>(null);
   const [dragStartOffset, setDragStartOffset] = useState(0);
   const [markers, setMarkers] = useState<number[]>([]);
+  const [displayData, setDisplayData] = useState<LivelinePoint[]>(data);
+  const displayDataRef = useRef<LivelinePoint[]>(data);
+  const animationRef = useRef<number | null>(null);
 
-  const allCandles = useMemo(() => buildCandles(data), [data]);
+  useEffect(() => {
+    if (animationRef.current !== null) {
+      cancelAnimationFrame(animationRef.current);
+    }
+
+    const from = displayDataRef.current;
+    const to = data;
+
+    if (!from.length || !to.length) {
+      displayDataRef.current = to;
+      queueMicrotask(() => setDisplayData(to));
+      return;
+    }
+
+    const duration = 520;
+    const startedAt = performance.now();
+    const lengthDelta = to.length - from.length;
+    const fallbackStart = from[from.length - 1];
+    const startFrames = to.map((point, index) => {
+      const fromIndex = index - Math.max(0, lengthDelta);
+      return from[fromIndex] ?? fallbackStart ?? point;
+    });
+
+    const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+
+    const animate = (now: number) => {
+      const progress = easeOut(Math.min(1, (now - startedAt) / duration));
+      const next = to.map((point, index) => {
+        const start = startFrames[index] ?? point;
+        return {
+          time: point.time,
+          value: start.value + (point.value - start.value) * progress,
+        };
+      });
+
+      displayDataRef.current = next;
+      setDisplayData(next);
+
+      if (progress < 1) {
+        animationRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    animationRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationRef.current !== null) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [data]);
+
+  const renderedValue = displayData[displayData.length - 1]?.value ?? value;
+  const allCandles = useMemo(() => buildCandles(displayData), [displayData]);
   const maxOffset = Math.max(0, allCandles.length - visibleCount);
   const safeOffset = Math.min(offsetFromEnd, maxOffset);
   const visibleCandles = useMemo(() => {
@@ -112,8 +168,8 @@ export default function PortfolioChart({ data, value }: PortfolioChartProps) {
   const chart = useMemo(() => {
     const highs = visibleCandles.map((candle) => candle.high);
     const lows = visibleCandles.map((candle) => candle.low);
-    const max = Math.max(...highs, value);
-    const min = Math.min(...lows, value);
+    const max = Math.max(...highs, renderedValue);
+    const min = Math.min(...lows, renderedValue);
     const range = Math.max(1, max - min);
     const top = max + range * 0.05;
     const bottom = Math.max(0, min - range * 0.05);
@@ -126,7 +182,7 @@ export default function PortfolioChart({ data, value }: PortfolioChartProps) {
     const priceAtY = (svgY: number) => top - ((svgY - PAD.top) / height) * (top - bottom);
 
     return { top, bottom, height, width, slot, candleWidth, x, y, priceAtY };
-  }, [visibleCandles, value]);
+  }, [visibleCandles, renderedValue]);
 
   const hoveredCandle = hoverIndex !== null ? visibleCandles[hoverIndex] : null;
   const linePath = visibleCandles
@@ -135,7 +191,7 @@ export default function PortfolioChart({ data, value }: PortfolioChartProps) {
   const areaPath = linePath
     ? `${linePath} L ${chart.x(visibleCandles.length - 1)} ${SVG_HEIGHT - PAD.bottom} L ${chart.x(0)} ${SVG_HEIGHT - PAD.bottom} Z`
     : '';
-  const baseline = visibleCandles[0]?.open ?? value;
+  const baseline = visibleCandles[0]?.open ?? renderedValue;
 
   const yLabels = useMemo(() => {
     return Array.from({ length: 7 }, (_, i) => {
@@ -380,9 +436,9 @@ export default function PortfolioChart({ data, value }: PortfolioChartProps) {
           </g>
         )}
 
-        <line x1={PAD.left} x2={SVG_WIDTH - PAD.right} y1={chart.y(value)} y2={chart.y(value)} stroke="rgba(255,255,255,0.34)" strokeDasharray="4 6" strokeWidth="1" />
-        <text x={SVG_WIDTH - PAD.right + 14} y={chart.y(value) - 8} fill="rgba(255,255,255,0.82)" fontSize="12" fontFamily="monospace">
-          {formatCurrency(value)}
+        <line x1={PAD.left} x2={SVG_WIDTH - PAD.right} y1={chart.y(renderedValue)} y2={chart.y(renderedValue)} stroke="rgba(255,255,255,0.34)" strokeDasharray="4 6" strokeWidth="1" />
+        <text x={SVG_WIDTH - PAD.right + 14} y={chart.y(renderedValue) - 8} fill="rgba(255,255,255,0.82)" fontSize="12" fontFamily="monospace">
+          {formatCurrency(renderedValue)}
         </text>
       </svg>
       </div>

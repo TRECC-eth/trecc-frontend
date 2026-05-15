@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import type { LivelinePoint } from 'liveline';
 import { formatUnits } from 'viem';
@@ -79,6 +79,7 @@ function seedSeries(value: number): LivelinePoint[] {
 export default function LenderDashboard() {
   const { address } = useAccount();
   const [series, setSeries] = useState<LivelinePoint[]>([]);
+  const lastPersistRef = useRef(0);
 
   const { data: totalAssets } = useReadContract({
     address: TRECC_VAULT_ADDRESS,
@@ -144,15 +145,24 @@ export default function LenderDashboard() {
       setSeries((prev) => {
         const base = prev.length ? prev : seedSeries(chartValue);
         const lastValue = base[base.length - 1]?.value ?? anchor;
-        const meanReversion = (anchor - lastValue) * 0.04;
-        const movement = (Math.random() - 0.48) * anchor * 0.0035;
+        const meanReversion = (anchor - lastValue) * 0.008;
+        const movement = (Math.random() - 0.49) * anchor * 0.00038;
         const nextValue = Math.max(anchor * 0.86, Math.min(anchor * 1.18, lastValue + meanReversion + movement));
-        const nextPoint = { time: Date.now() / 1000, value: nextValue };
-        const next = [...base, nextPoint].slice(-1200);
-        writeStoredSeries(address, next);
+        const now = Date.now() / 1000;
+        const lastPoint = base[base.length - 1];
+        const shouldAppendPoint = !lastPoint || now - lastPoint.time >= 3;
+        const nextPoint = { time: shouldAppendPoint ? now : lastPoint.time, value: nextValue };
+        const next = shouldAppendPoint
+          ? [...base, nextPoint].slice(-1200)
+          : [...base.slice(0, -1), nextPoint];
+
+        if (Date.now() - lastPersistRef.current > 2000) {
+          lastPersistRef.current = Date.now();
+          writeStoredSeries(address, next);
+        }
         return next;
       });
-    }, 2000);
+    }, 650);
     return () => window.clearInterval(id);
   }, [address, chartValue]);
 
