@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
 import { Providers } from "./provider";
 import Navbar from "../components/Navbar";
@@ -22,7 +23,9 @@ export default function RootLayout({
       <body className={`${inter.className} bg-slate-950 text-white min-h-screen flex flex-col`}>
         <Providers>
           <MobileGate>
-            <Navbar />
+            <Suspense fallback={null}>
+              <Navbar />
+            </Suspense>
             <main className="flex-grow flex flex-col">{children}</main>
           </MobileGate>
         </Providers>

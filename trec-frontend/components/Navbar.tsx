@@ -103,7 +103,7 @@ export default function Navbar() {
   const displayAvatar = isDemo ? DEMO_AVATAR : (realEnsAvatar || randomAvatar);
   const roleParam = searchParams.get('role');
   const showWalletControls = pathname !== '/' || roleParam === 'lender' || roleParam === 'borrower';
-  const hasLenderDashboard = isConnected && (hasStoredLenderDashboard || (lenderVaultShares ?? 0n) > 0n);
+  const hasLenderDashboard = isConnected && (hasStoredLenderDashboard || (lenderVaultShares ?? BigInt(0)) > BigInt(0));
   const isLenderVaultPage = roleParam === 'lender' || pathname === '/capital-provider';
   const showDashboardButton = hasLenderDashboard && isLenderVaultPage && pathname !== '/dashboard/lender';
 

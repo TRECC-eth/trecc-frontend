@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { Suspense, useState, useCallback, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { TrendingUp, Bot, ArrowLeft } from 'lucide-react';
 import AgentRegistry from '../components/AgentRegistry';
@@ -9,6 +9,14 @@ import ElsaChat from '../components/ElsaChat';
 import BorrowerGate from '../components/BorrowerGate';
 
 export default function Home() {
+  return (
+    <Suspense fallback={null}>
+      <HomeContent />
+    </Suspense>
+  );
+}
+
+function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [role, setRole] = useState<'lender' | 'borrower' | null>(null);
