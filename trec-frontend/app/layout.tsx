@@ -9,8 +9,11 @@ import MobileGate from "../components/MobileGate";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "TRECC Protocol",
+  title: "TRECC",
   description: "Trustless Reputation & Evaluation Credit",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default function RootLayout({
