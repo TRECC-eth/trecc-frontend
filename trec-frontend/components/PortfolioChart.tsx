@@ -59,16 +59,34 @@ function formatTimeLabel(t: number, windowSecs: number): string {
   });
 }
 
-function buildCandles(points: LivelinePoint[]): Candle[] {
+function getMaxCandles(windowSecs: number) {
+  if (windowSecs <= 3600) return 90;
+  if (windowSecs <= 14400) return 150;
+  if (windowSecs <= 86400) return 220;
+  return 320;
+}
+
+function getTargetCandles(visibleWindowSecs: number, selectedWindowSecs: number) {
+  const maxCandles = getMaxCandles(selectedWindowSecs);
+  const zoomRatio = Math.max(0.08, Math.min(1, visibleWindowSecs / selectedWindowSecs));
+  return Math.max(34, Math.round(maxCandles * zoomRatio));
+}
+
+function buildCandles(points: LivelinePoint[], targetCandles: number, windowStart: number, windowEnd: number): Candle[] {
   if (points.length < 2) return [];
 
-  const targetCandles = 420;
-  const groupSize = Math.max(1, Math.floor(points.length / targetCandles));
-  const candles: Candle[] = [];
+  const bucketSize = Math.max(1, (windowEnd - windowStart) / targetCandles);
+  const buckets = new Map<number, LivelinePoint[]>();
 
-  for (let i = 0; i < points.length - 1; i += groupSize) {
-    const group = points.slice(i, Math.min(points.length, i + groupSize + 1));
-    if (group.length < 2) continue;
+  points.forEach((point) => {
+    const bucket = Math.max(0, Math.min(targetCandles - 1, Math.floor((point.time - windowStart) / bucketSize)));
+    buckets.set(bucket, [...(buckets.get(bucket) ?? []), point]);
+  });
+
+  return Array.from(buckets.entries())
+    .sort(([a], [b]) => a - b)
+    .map(([bucket, group]) => {
+    if (group.length < 2) return null;
 
     const open = group[0].value;
     const close = group[group.length - 1].value;
@@ -78,28 +96,28 @@ function buildCandles(points: LivelinePoint[]): Candle[] {
     const body = Math.abs(close - open);
     const wickPad = Math.max(Math.max(open, 1) * 0.00025, body * 0.16);
 
-    candles.push({
-      time: group[group.length - 1].time,
+    return {
+      time: windowStart + (bucket + 0.5) * bucketSize,
       open,
       close,
       high: baseHigh + wickPad,
       low: Math.max(0, baseLow - wickPad),
-    });
-  }
-
-  return candles;
+    };
+  }).filter((candle): candle is Candle => candle !== null);
 }
 
 export default function PortfolioChart({ data, value }: PortfolioChartProps) {
   const [activeWindowSecs, setActiveWindowSecs] = useState(WINDOWS[2].secs);
+  const [zoomWindowSecs, setZoomWindowSecs] = useState(WINDOWS[2].secs);
   const [mode, setMode] = useState<ChartMode>('candles');
-  const [visibleCount, setVisibleCount] = useState(180);
+  const [visibleCount, setVisibleCount] = useState(9999);
   const [offsetFromEnd, setOffsetFromEnd] = useState(0);
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const [dragStartX, setDragStartX] = useState<number | null>(null);
   const [dragStartOffset, setDragStartOffset] = useState(0);
   const [markers, setMarkers] = useState<number[]>([]);
   const [displayData, setDisplayData] = useState<LivelinePoint[]>(data);
+  const [fallbackTime] = useState(() => Date.now() / 1000);
   const displayDataRef = useRef<LivelinePoint[]>(data);
   const animationRef = useRef<number | null>(null);
 
@@ -156,7 +174,14 @@ export default function PortfolioChart({ data, value }: PortfolioChartProps) {
   }, [data]);
 
   const renderedValue = displayData[displayData.length - 1]?.value ?? value;
-  const allCandles = useMemo(() => buildCandles(displayData), [displayData]);
+  const latestTime = displayData[displayData.length - 1]?.time ?? fallbackTime;
+  const windowEnd = latestTime;
+  const windowStart = windowEnd - zoomWindowSecs;
+  const windowedData = useMemo(() => {
+    return displayData.filter((point) => point.time >= windowStart && point.time <= windowEnd);
+  }, [displayData, windowStart, windowEnd]);
+  const targetCandles = getTargetCandles(zoomWindowSecs, activeWindowSecs);
+  const allCandles = useMemo(() => buildCandles(windowedData, targetCandles, windowStart, windowEnd), [windowedData, targetCandles, windowStart, windowEnd]);
   const maxOffset = Math.max(0, allCandles.length - visibleCount);
   const safeOffset = Math.min(offsetFromEnd, maxOffset);
   const visibleCandles = useMemo(() => {
@@ -175,14 +200,27 @@ export default function PortfolioChart({ data, value }: PortfolioChartProps) {
     const bottom = Math.max(0, min - range * 0.05);
     const height = SVG_HEIGHT - PAD.top - PAD.bottom;
     const width = SVG_WIDTH - PAD.left - PAD.right;
-    const slot = width / Math.max(1, visibleCandles.length);
-    const candleWidth = Math.max(1.6, Math.min(7, slot * 0.7));
+    const effectiveWindowStart = activeWindowSecs >= 604800 ? windowStart : Math.max(windowStart, visibleCandles[0]?.time ?? windowStart);
+    const effectiveWindowEnd = activeWindowSecs >= 604800 ? windowEnd : Math.max(windowEnd, visibleCandles[visibleCandles.length - 1]?.time ?? windowEnd);
+    const slot = width / Math.max(40, visibleCandles.length);
     const y = (price: number) => PAD.top + ((top - price) / Math.max(1, top - bottom)) * height;
-    const x = (index: number) => PAD.left + slot * index + slot / 2;
+    const x = (index: number) => {
+      const candle = visibleCandles[index];
+      if (!candle) return PAD.left;
+      const ratio = (candle.time - effectiveWindowStart) / Math.max(1, effectiveWindowEnd - effectiveWindowStart);
+      return PAD.left + Math.max(0, Math.min(1, ratio)) * width;
+    };
+    const xPositions = visibleCandles.map((_, index) => x(index));
+    const minGap = xPositions.reduce((smallest, current, index) => {
+      if (index === 0) return smallest;
+      return Math.min(smallest, Math.max(1, current - xPositions[index - 1]));
+    }, Number.POSITIVE_INFINITY);
+    const gap = Number.isFinite(minGap) ? minGap : slot;
+    const candleWidth = Math.max(1.2, Math.min(13, gap * 0.58));
     const priceAtY = (svgY: number) => top - ((svgY - PAD.top) / height) * (top - bottom);
 
     return { top, bottom, height, width, slot, candleWidth, x, y, priceAtY };
-  }, [visibleCandles, renderedValue]);
+  }, [visibleCandles, renderedValue, activeWindowSecs, windowStart, windowEnd]);
 
   const hoveredCandle = hoverIndex !== null ? visibleCandles[hoverIndex] : null;
   const linePath = visibleCandles
@@ -202,23 +240,35 @@ export default function PortfolioChart({ data, value }: PortfolioChartProps) {
   }, [chart]);
 
   const xLabels = useMemo(() => {
-    if (!visibleCandles.length) return [];
+    const labelWindowStart = activeWindowSecs >= 604800 ? windowStart : Math.max(windowStart, visibleCandles[0]?.time ?? windowStart);
+    const labelWindowEnd = activeWindowSecs >= 604800 ? windowEnd : Math.max(windowEnd, visibleCandles[visibleCandles.length - 1]?.time ?? windowEnd);
+
     return Array.from({ length: 5 }, (_, i) => {
-      const index = Math.round((visibleCandles.length - 1) * (i / 4));
-      const candle = visibleCandles[index];
+      const ratio = i / 4;
+      const time = labelWindowStart + (labelWindowEnd - labelWindowStart) * ratio;
       return {
-        label: formatTimeLabel(candle.time, activeWindowSecs),
-        x: chart.x(index),
+        label: formatTimeLabel(time, zoomWindowSecs),
+        x: PAD.left + chart.width * ratio,
       };
     });
-  }, [visibleCandles, activeWindowSecs, chart]);
+  }, [visibleCandles, activeWindowSecs, zoomWindowSecs, chart.width, windowStart, windowEnd]);
 
   const pointerToIndex = (event: React.PointerEvent<SVGSVGElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
     const ratio = (event.clientX - rect.left) / Math.max(1, rect.width);
     const svgX = ratio * SVG_WIDTH;
-    const rawIndex = Math.round((svgX - PAD.left - chart.slot / 2) / chart.slot);
-    return Math.max(0, Math.min(visibleCandles.length - 1, rawIndex));
+    let nearestIndex = 0;
+    let nearestDistance = Number.POSITIVE_INFINITY;
+
+    visibleCandles.forEach((_, index) => {
+      const distance = Math.abs(chart.x(index) - svgX);
+      if (distance < nearestDistance) {
+        nearestDistance = distance;
+        nearestIndex = index;
+      }
+    });
+
+    return nearestIndex;
   };
 
   const pointerToPrice = (event: React.PointerEvent<SVGSVGElement>) => {
@@ -229,10 +279,17 @@ export default function PortfolioChart({ data, value }: PortfolioChartProps) {
 
   const handleWheel = (event: React.WheelEvent<SVGSVGElement>) => {
     event.preventDefault();
-    const delta = event.deltaY > 0 ? 24 : -24;
-    const nextVisible = Math.max(40, Math.min(allCandles.length || 420, visibleCount + delta));
-    setVisibleCount(nextVisible);
-    setOffsetFromEnd((prev) => Math.min(prev, Math.max(0, allCandles.length - nextVisible)));
+    const wheelIntensity = Math.min(1.6, Math.max(0.35, Math.abs(event.deltaY) / 120));
+    const factor = Math.pow(1.18, wheelIntensity);
+    const minZoomWindow = Math.max(300, activeWindowSecs / 16);
+    const nextWindow = event.deltaY > 0
+      ? zoomWindowSecs * factor
+      : zoomWindowSecs / factor;
+
+    setZoomWindowSecs(Math.max(minZoomWindow, Math.min(activeWindowSecs, nextWindow)));
+    setVisibleCount(9999);
+    setOffsetFromEnd(0);
+    setHoverIndex(null);
   };
 
   const handlePointerDown = (event: React.PointerEvent<SVGSVGElement>) => {
@@ -268,7 +325,13 @@ export default function PortfolioChart({ data, value }: PortfolioChartProps) {
           <button
             key={window.label}
             type="button"
-            onClick={() => setActiveWindowSecs(window.secs)}
+            onClick={() => {
+              setActiveWindowSecs(window.secs);
+              setZoomWindowSecs(window.secs);
+              setVisibleCount(9999);
+              setOffsetFromEnd(0);
+              setHoverIndex(null);
+            }}
             className={`h-7 px-3 text-[11px] font-semibold transition-colors ${window.secs === activeWindowSecs ? 'bg-zinc-100 text-zinc-950' : 'text-zinc-500 hover:text-zinc-200'}`}
           >
             {window.label}
@@ -292,7 +355,8 @@ export default function PortfolioChart({ data, value }: PortfolioChartProps) {
       <button
         type="button"
         onClick={() => {
-          setVisibleCount(180);
+          setZoomWindowSecs(activeWindowSecs);
+          setVisibleCount(9999);
           setOffsetFromEnd(0);
           setMarkers([]);
         }}
