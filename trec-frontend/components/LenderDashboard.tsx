@@ -11,7 +11,7 @@ import PortfolioChart from './PortfolioChart';
 
 const SEPOLIA_CHAIN_ID = 11155111;
 const USDC_DECIMALS = 6;
-const SERIES_STORAGE_PREFIX = 'trecc:lender-series:';
+const SERIES_STORAGE_PREFIX = 'trecc:lender-series:v2:';
 
 const DASHBOARD_VAULT_ABI = [
   { inputs: [], name: 'totalAssets', outputs: [{ type: 'uint256' }], stateMutability: 'view', type: 'function' },
@@ -57,17 +57,31 @@ function writeStoredSeries(address: string | undefined, series: LivelinePoint[])
   localStorage.setItem(`${SERIES_STORAGE_PREFIX}${address.toLowerCase()}`, JSON.stringify(series.slice(-1200)));
 }
 
+function randomNormal() {
+  const u = 1 - Math.random();
+  const v = Math.random();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
 function seedSeries(value: number): LivelinePoint[] {
   const now = Date.now() / 1000;
   const points = 1200;
   const interval = 8;
   const base = value > 0 ? value : 5000;
   let current = base;
+  let driftBias = 0;
+  let volatility = base * 0.0014;
 
   return Array.from({ length: points }, (_, index) => {
-    const wave = Math.sin(index / 18) * base * 0.0018;
-    const drift = (Math.random() - 0.48) * base * 0.0028;
-    current = Math.max(base * 0.86, Math.min(base * 1.18, current + wave + drift));
+    if (index % (45 + Math.floor(Math.random() * 55)) === 0) {
+      driftBias = randomNormal() * base * 0.00038;
+      volatility = base * (0.0009 + Math.random() * 0.0022);
+    }
+
+    const meanReversion = (base - current) * 0.006;
+    const shock = randomNormal() * volatility;
+    const jump = Math.random() < 0.018 ? randomNormal() * base * 0.008 : 0;
+    current = Math.max(base * 0.78, Math.min(base * 1.24, current + driftBias + meanReversion + shock + jump));
 
     return {
       time: now - (points - index) * interval,
@@ -145,9 +159,10 @@ export default function LenderDashboard() {
       setSeries((prev) => {
         const base = prev.length ? prev : seedSeries(chartValue);
         const lastValue = base[base.length - 1]?.value ?? anchor;
-        const meanReversion = (anchor - lastValue) * 0.008;
-        const movement = (Math.random() - 0.49) * anchor * 0.00038;
-        const nextValue = Math.max(anchor * 0.86, Math.min(anchor * 1.18, lastValue + meanReversion + movement));
+        const meanReversion = (anchor - lastValue) * 0.006;
+        const movement = randomNormal() * anchor * 0.00032;
+        const microJump = Math.random() < 0.04 ? randomNormal() * anchor * 0.0014 : 0;
+        const nextValue = Math.max(anchor * 0.78, Math.min(anchor * 1.24, lastValue + meanReversion + movement + microJump));
         const now = Date.now() / 1000;
         const lastPoint = base[base.length - 1];
         const shouldAppendPoint = !lastPoint || now - lastPoint.time >= 3;
