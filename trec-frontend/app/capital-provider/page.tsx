@@ -1,45 +1,42 @@
 'use client';
 
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import LenderVault from '../../components/LenderVault';
 
 export default function CapitalProviderPage() {
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
 
   const handleDepositSuccess = useCallback(() => {
     router.push('/dashboard/lender');
   }, [router]);
 
   return (
-    <div
-      className={`flex flex-col items-center justify-start flex-grow px-4 md:px-8 py-8 md:py-16 transition-all duration-500 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
-    >
-
-      <div className="w-full max-w-lg bg-zinc-950/80 backdrop-blur-md border border-zinc-800 rounded-2xl p-8">
-        {/* Page header — left-aligned, no decorative icon */}
-        <div className="mb-10">
-          <p className="text-xs font-medium tracking-widest uppercase text-zinc-500 mb-2">
-            Capital Provider
-          </p>
-          <h1 className="text-2xl md:text-3xl font-semibold text-zinc-100 tracking-tight leading-tight">
-            Provide Liquidity
-          </h1>
-          <p className="text-sm text-zinc-500 mt-2 leading-relaxed max-w-sm">
-            Deposit USDC or stake ETH to start earning yield. You'll be redirected to your dashboard after your first deposit.
-          </p>
-        </div>
-
-        {/* Vault component */}
-        <div
-          className={`transition-all duration-500 delay-150 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}
+    <main className="min-h-screen px-4 pt-36 pb-10 md:px-8">
+      <div className="mx-auto w-full max-w-5xl">
+        <button
+          type="button"
+          onClick={() => router.push('/')}
+          className="mb-10 flex items-center gap-2 text-xs font-medium tracking-[0.1em] text-zinc-500 transition-colors duration-300 hover:text-zinc-200"
         >
-          <LenderVault onDepositSuccess={handleDepositSuccess} />
-        </div>
+          <ArrowLeft size={14} strokeWidth={1.5} /> TERMINATE SESSION
+        </button>
+
+        <section className="rounded-[2rem] border border-white/[0.08] bg-[#030303] p-7 shadow-[0_20px_50px_-10px_rgba(0,0,0,1),inset_0_1px_0_rgba(255,255,255,0.02)] md:p-10">
+          <div className="mx-auto max-w-4xl text-center">
+            <h1 className="mb-5 bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_40%,#8c8c8c_100%)] bg-clip-text text-3xl font-medium tracking-tight text-transparent">
+              Liquidity Vault
+            </h1>
+            <p className="mx-auto mb-8 max-w-3xl text-sm leading-relaxed text-slate-400 md:text-base">
+              Provide USDC to start earning yield. You will be taken to your dashboard after your first deposit.
+            </p>
+            <div className="text-left">
+              <LenderVault onDepositSuccess={handleDepositSuccess} />
+            </div>
+          </div>
+        </section>
       </div>
-    </div>
+    </main>
   );
 }

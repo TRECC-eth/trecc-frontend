@@ -14,12 +14,12 @@ export default function EtheralBackground() {
   return (
     <div
       className="fixed inset-0 z-0 pointer-events-none transition-opacity duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)]"
-      style={{ opacity: visible ? 1 : 0 }}
+      style={{ opacity: visible ? 0.7  : 0 }}
     >
       <EtheralShadow
-        color="rgba(100, 100, 115, 1)"
+        color="rgba(92, 92, 105, 0.55)"
         animation={{ scale: 50, speed: 95 }}
-        noise={{ opacity: 0.4, scale: 1.2 }}
+        noise={{ opacity: 0.75, scale: 1.2 }}
       />
     </div>
   );

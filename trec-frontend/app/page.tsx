@@ -51,6 +51,11 @@ function HomeContent() {
   }, [router]);
 
   const handleRoleSelection = useCallback((r: 'lender' | 'borrower') => {
+    if (r === 'lender') {
+      router.push('/capital-provider');
+      return;
+    }
+
     setRole(r);
     router.replace(`/?role=${r}`, { scroll: false });
     if (r === 'borrower') {
@@ -66,14 +71,15 @@ function HomeContent() {
   useEffect(() => {
     if (!mounted) return;
     const roleParam = searchParams.get('role');
-    if (roleParam === 'lender' && role !== 'lender') {
-      setRole('lender');
+    if (roleParam === 'lender') {
+      router.replace('/lender-page');
+      return;
     }
     if (roleParam === 'borrower' && role !== 'borrower') {
       setRole('borrower');
       setIsInitializing(false);
     }
-  }, [mounted, role, searchParams]);
+  }, [mounted, role, router, searchParams]);
 
   useEffect(() => {
     if (agentCreated && hasFundedAgent && role === 'borrower') router.push('/dashboard/borrower');
