@@ -1,53 +1,53 @@
 'use client';
 
-import React, { useState, useCallback, useEffect, Suspense } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useAccount } from 'wagmi';
 import { TrendingUp, Bot, ArrowLeft } from 'lucide-react';
 import AgentRegistry from '../components/AgentRegistry';
+import LenderVault from '../components/LenderVault';
 import ElsaChat from '../components/ElsaChat';
 import BorrowerGate from '../components/BorrowerGate';
-import { getKycStatus } from '../lib/kyc';
 
 export default function Home() {
-  return (
-    <Suspense>
-      <HomeContent />
-    </Suspense>
-  );
-}
-
-function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { address } = useAccount();
-  const [role, setRole] = useState<'borrower' | null>(null);
+  const [role, setRole] = useState<'lender' | 'borrower' | null>(null);
+  const [hasProvidedLiquidity, setHasProvidedLiquidity] = useState(false);
   const [agentCreated, setAgentCreated] = useState(false);
   const [hasFundedAgent, setHasFundedAgent] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
   const [bootText, setBootText] = useState('Initializing...');
 
+  const handleDepositSuccess = useCallback(() => {
+    setHasProvidedLiquidity(true);
+    router.push('/dashboard/lender');
+  }, [router]);
+
+  const handleFundSuccess = useCallback(() => {
+    setHasFundedAgent(true);
+    router.push('/dashboard/borrower');
+  }, [router]);
+
   const handleAgentMinted = useCallback(() => {
     setAgentCreated(true);
     router.push('/dashboard/borrower');
   }, [router]);
 
-  const handleBorrowerSelection = useCallback(async () => {
-    if (!address) {
-      setRole('borrower');
+  const handleSwitchRole = useCallback(() => {
+    setRole(null);
+    setHasProvidedLiquidity(false);
+    setAgentCreated(false);
+    setHasFundedAgent(false);
+  }, []);
+
+  const handleRoleSelection = useCallback((r: 'lender' | 'borrower') => {
+    setRole(r);
+    if (r === 'borrower') {
       setIsInitializing(true);
       setBootText('Initializing...');
-      return;
     }
-
-    const status = await getKycStatus(address);
-    if (status === 'approved' || status === 'pending') {
-      router.push('/create-agent');
-    } else {
-      router.push('/kyc');
-    }
-  }, [address, router]);
+  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -63,8 +63,8 @@ function HomeContent() {
   }, [mounted, searchParams]);
 
   useEffect(() => {
-    if (agentCreated && hasFundedAgent) router.push('/dashboard/borrower');
-  }, [agentCreated, hasFundedAgent, router]);
+    if (agentCreated && hasFundedAgent && role === 'borrower') router.push('/dashboard/borrower');
+  }, [agentCreated, hasFundedAgent, role, router]);
 
   useEffect(() => {
     if (!isInitializing || role !== 'borrower') return;
@@ -86,15 +86,14 @@ function HomeContent() {
     return (
       <div className={`flex flex-col items-center justify-center flex-grow p-4 md:p-8 relative min-h-[90vh] bg-black transition-opacity duration-1000 ease-in-out ${mounted ? 'opacity-100' : 'opacity-0'}`}>
 
-        {/* Radial gradient background */}
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_120%,rgba(200,200,220,0.18),transparent)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_100%,rgba(160,165,185,0.1),transparent)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_600px_at_70%_110%,rgba(140,145,170,0.07),transparent)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_600px_at_30%_110%,rgba(140,145,170,0.07),transparent)]" />
+        {/* Studio Lighting */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-white/[0.03] rounded-[100%] blur-[100px] pointer-events-none" />
+
+        <div className="relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+
         </div>
 
-        <div className="relative z-10 text-center mb-8">
+        <div className="relative z-10 text-center mb-8 animate-in slide-in-from-bottom-6 duration-1000 delay-150 fade-in">
           <h1 className="
             text-5xl md:text-7xl lg:text-[5.5rem] font-medium tracking-tight leading-tight
             text-transparent bg-clip-text 
@@ -105,7 +104,7 @@ function HomeContent() {
           </h1>
         </div>
 
-        <p className="text-zinc-300 mb-16 text-center max-w-lg z-10 text-base md:text-lg font-light tracking-wide leading-relaxed animate-in slide-in-from-bottom-6 duration-1000 delay-300 fade-in">
+        <p className="text-zinc-500 mb-16 text-center max-w-lg z-10 text-base md:text-lg font-light tracking-wide leading-relaxed animate-in slide-in-from-bottom-6 duration-1000 delay-300 fade-in">
           Establish secure connection to the prime brokerage infrastructure. Provide liquidity, or mint an autonomous agent to execute operations.
         </p>
 
@@ -113,7 +112,7 @@ function HomeContent() {
 
           {/* LENDER: 3D CHROMIUM MODEL CARD */}
           <button
-            onClick={() => router.push('/capital-provider')}
+            onClick={() => handleRoleSelection('lender')}
             className="
               group relative p-10 rounded-[2.5rem] text-left transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]
               /* The Base Chromium Surface Reflection */
@@ -141,15 +140,16 @@ function HomeContent() {
 
             <h2 className="relative z-10 text-2xl font-medium mb-3 text-transparent bg-clip-text bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_40%,#999999_100%)] tracking-tight flex items-center justify-between group-hover:bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_60%,#cccccc_100%)] transition-all duration-500">
               Capital Provider
+              <ArrowLeft className="text-zinc-600 group-hover:text-zinc-200 transition-colors group-hover:translate-x-1 duration-500 rotate-180" strokeWidth={1.5} />
             </h2>
-            <p className="relative z-10 text-zinc-300 text-sm leading-relaxed font-light group-hover:text-zinc-400 transition-colors duration-500">
+            <p className="relative z-10 text-zinc-500 text-sm leading-relaxed font-light group-hover:text-zinc-400 transition-colors duration-500">
               Deploy capital into the high-yield vault. Earn passive, risk-adjusted returns generated by mathematically verified AI agents.
             </p>
           </button>
 
           {/* BORROWER: 3D CHROMIUM MODEL CARD */}
           <button
-            onClick={() => handleBorrowerSelection()}
+            onClick={() => handleRoleSelection('borrower')}
             className="
               group relative p-10 rounded-[2.5rem] text-left transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]
               /* The Base Chromium Surface Reflection */
@@ -177,8 +177,9 @@ function HomeContent() {
 
             <h2 className="relative z-10 text-2xl font-medium mb-3 text-transparent bg-clip-text bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_40%,#999999_100%)] tracking-tight flex items-center justify-between group-hover:bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_60%,#cccccc_100%)] transition-all duration-500">
               Autonomous Agent
+              <ArrowLeft className="text-zinc-600 group-hover:text-zinc-200 transition-colors group-hover:translate-x-1 duration-500 rotate-180" strokeWidth={1.5} />
             </h2>
-            <p className="relative z-10 text-zinc-300 text-sm leading-relaxed font-light group-hover:text-zinc-400 transition-colors duration-500">
+            <p className="relative z-10 text-zinc-500 text-sm leading-relaxed font-light group-hover:text-zinc-400 transition-colors duration-500">
               Mint your ERC-8004 identity. Establish operational parameters, build reputation, and command Elsa to execute on-chain.
             </p>
           </button>
@@ -212,29 +213,47 @@ function HomeContent() {
         <ArrowLeft size={14} strokeWidth={1.5} /> TERMINATE SESSION
       </button>
 
-      <BorrowerGate>
-        <div className="w-full flex flex-col gap-10">
-          <div className="
+      {role === 'lender' ? (
+        <div className="
+          p-10 md:p-14 rounded-[2rem] relative
+          bg-[#030303] border border-white/[0.08]
+          shadow-[0_20px_50px_-10px_rgba(0,0,0,1),inset_0_1px_0_rgba(255,255,255,0.02)]
+        ">
+          <h2 className="text-3xl font-medium mb-10 text-transparent bg-clip-text bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_40%,#8c8c8c_100%)] tracking-tight">
+            Liquidity Vault
+          </h2>
+          <div className="w-full">
+            <p className="relative z-10 text-slate-400 mb-8">Provide USDC to start earning yield. You will be taken to your dashboard after your first deposit.</p>
+            <div className="relative z-10 w-full">
+              <LenderVault onDepositSuccess={handleDepositSuccess} />
+            </div>
+          </div>
+        </div>
+      ) : (
+          <BorrowerGate>
+            <div className="w-full flex flex-col gap-10">
+              <div className="
             p-10 md:p-14 rounded-[2rem] relative flex flex-col items-start
             bg-[#030303] border border-white/[0.08]
             shadow-[0_20px_50px_-10px_rgba(0,0,0,1),inset_0_1px_0_rgba(255,255,255,0.02)]
           ">
-            <h2 className="text-3xl font-medium mb-2 text-transparent bg-clip-text bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_40%,#8c8c8c_100%)] tracking-tight">
-              Agent Identity
-            </h2>
-            <p className="text-zinc-500 mb-10 font-light text-sm tracking-wide">
-              Establish your core identity and on-chain credit parameters.
-            </p>
-            <div className="w-full">
-              <AgentRegistry onAgentMinted={handleAgentMinted} />
-            </div>
-          </div>
+                <h2 className="text-3xl font-medium mb-2 text-transparent bg-clip-text bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_40%,#8c8c8c_100%)] tracking-tight">
+                  Agent Identity
+                </h2>
+                <p className="text-zinc-500 mb-10 font-light text-sm tracking-wide">
+                  Establish your core identity and on-chain credit parameters.
+                </p>
+                <div className="w-full">
+                  <AgentRegistry onAgentMinted={handleAgentMinted} />
+                </div>
+              </div>
 
-          <div className="drop-shadow-2xl">
-            <ElsaChat />
-          </div>
-        </div>
-      </BorrowerGate>
+              <div className="drop-shadow-2xl">
+                <ElsaChat />
+              </div>
+            </div>
+          </BorrowerGate>
+      )}
     </div>
   );
 }
