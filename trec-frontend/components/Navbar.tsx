@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Network, LogOut, ChevronDown, Copy, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { formatUnits } from 'viem';
@@ -32,6 +32,8 @@ function getChainIconUrl(chainId: number): string {
 
 export default function Navbar() {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [isScrolled, setIsScrolled] = useState(false);
   const [chainIconError, setChainIconError] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -83,6 +85,8 @@ export default function Navbar() {
   }, [address]);
 
   const displayAvatar = isDemo ? DEMO_AVATAR : (realEnsAvatar || randomAvatar);
+  const roleParam = searchParams.get('role');
+  const showWalletControls = pathname !== '/' || roleParam === 'lender' || roleParam === 'borrower';
 
   useEffect(() => {
     if (!dropdownOpen) return;
@@ -106,16 +110,15 @@ export default function Navbar() {
   if (!mounted) return null;
 
   return (
-    <div className="fixed top-12 left-0 right-0 z-50 flex justify-center w-full pointer-events-none px-4 md:px-8">
+    <div className="fixed top-7 left-0 right-0 z-50 flex justify-center w-full pointer-events-none px-4 md:px-8">
       <nav
         className={`
-          relative pointer-events-auto flex items-center justify-between w-full max-w-6xl py-3 
-          /* SOFTENED FROSTED GLASS BACKGROUND */
+          relative pointer-events-auto flex items-center justify-between w-full max-w-6xl
           bg-zinc-900/40 backdrop-blur-[32px] saturate-150
-          border border-white/[0.08] rounded-full 
-          shadow-[0_20px_40px_-10px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.1)] 
+          border border-white/[0.08] rounded-full
+          shadow-[0_20px_40px_-10px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.1)]
           transition-all duration-500 ease-out
-          ${isScrolled ? 'px-6 bg-zinc-900/60' : 'px-6 md:px-8'}
+          ${isScrolled ? 'px-6 py-3 bg-zinc-900/60' : 'px-6 py-3 md:px-8'}
         `}
       >
         {/* Left: Logo Only */}
@@ -125,24 +128,34 @@ export default function Navbar() {
             <img
               src="/logo.png"
               alt="Logo"
-              className="relative w-10 h-10 object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
+              className="relative w-20 h-11 object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
             />
           </div>
         </Link>
 
         {/* Center: Simple Text Links */}
         <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 gap-10 items-center">
-          <Link href="#how-it-works" className="text-sm font-medium text-zinc-300 hover:text-white transition-colors tracking-wide drop-shadow-md">
-            How it works
-          </Link>
-          <Link href="#docs" className="text-sm font-medium text-zinc-300 hover:text-white transition-colors tracking-wide drop-shadow-md">
+          <Link
+            href="https://docs.trecc.finance/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm font-medium text-zinc-300 hover:text-white transition-colors tracking-wide drop-shadow-md"
+          >
             Docs
+          </Link>
+          <Link
+            href="https://trecc.finance/contact"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm font-medium text-zinc-300 hover:text-white transition-colors tracking-wide drop-shadow-md"
+          >
+            Contact
           </Link>
         </div>
 
         {/* Right Area: Connected State OR Metallic Connect Button */}
         <div className="flex items-center gap-3 z-10">
-          {isConnected ? (
+          {showWalletControls && isConnected ? (
             <>
               {/* Balance Pill - Softened Borders */}
               <div
@@ -269,7 +282,7 @@ export default function Navbar() {
                 )}
               </div>
             </>
-          ) : (
+          ) : showWalletControls ? (
 
             /* --- SOFTENED 3D CHROMIUM BUTTON --- */
             <button
@@ -303,7 +316,7 @@ export default function Navbar() {
               <span className="relative z-10">Connect Wallet</span>
             </button>
 
-          )}
+          ) : null}
         </div>
       </nav>
 
