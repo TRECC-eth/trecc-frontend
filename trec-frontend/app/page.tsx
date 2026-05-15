@@ -189,7 +189,7 @@ export default function Home() {
 
   // STATE 2: Active Dashboard (The Protocol View)
   return (
-    <div className="p-4 md:p-8 max-w-5xl mx-auto w-full z-10 relative">
+    <div className="w-full max-w-5xl mx-auto px-4 pt-36 pb-12 md:px-8 z-10 relative">
       <button
         onClick={handleSwitchRole}
         className="
@@ -202,16 +202,16 @@ export default function Home() {
 
       {role === 'lender' ? (
         <div className="
-          p-10 md:p-14 rounded-[2rem] relative
+          p-7 md:p-10 rounded-[2rem] relative
           bg-[#030303] border border-white/[0.08]
           shadow-[0_20px_50px_-10px_rgba(0,0,0,1),inset_0_1px_0_rgba(255,255,255,0.02)]
         ">
-          <h2 className="text-3xl font-medium mb-10 text-transparent bg-clip-text bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_40%,#8c8c8c_100%)] tracking-tight">
-            Liquidity Vault
-          </h2>
-          <div className="w-full">
-            <p className="relative z-10 text-slate-400 mb-8">Provide USDC to start earning yield. You will be taken to your dashboard after your first deposit.</p>
-            <div className="relative z-10 w-full">
+          <div className="mx-auto max-w-4xl text-center">
+            <h2 className="text-3xl font-medium mb-5 text-transparent bg-clip-text bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_40%,#8c8c8c_100%)] tracking-tight">
+              Liquidity Vault
+            </h2>
+            <p className="relative z-10 text-slate-400 mb-8 mx-auto max-w-3xl">Provide USDC to start earning yield. You will be taken to your dashboard after your first deposit.</p>
+            <div className="relative z-10 w-full text-left">
               <LenderVault onDepositSuccess={handleDepositSuccess} />
             </div>
           </div>

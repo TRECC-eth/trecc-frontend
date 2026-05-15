@@ -16,6 +16,8 @@ import {
 } from '../constants/ens';
 import { NAME_WRAPPER_ABI } from '../constants/abi/nameWrapperAbi';
 import { getStoredTreccUsername } from '../lib/ens-storage';
+import { getLenderDashboardAccess } from '../lib/lender-dashboard-storage';
+import { TRECC_VAULT_ADDRESS } from '../constants/production-addresses';
 
 // --- CONFIG: PASTE YOUR WALLET ADDRESS HERE FOR THE DEMO ---
 const DEMO_ADDRESS = "0x29d637b793c29372ab93cd4f401f1db639835097";
@@ -26,6 +28,10 @@ const CHAIN_ICON_URLS: Record<number, string> = {
   84532: 'https://base.org/images/logo.svg',
   11155111: 'https://ethereum.org/favicon.ico',
 };
+const VAULT_BALANCE_ABI = [
+  { inputs: [{ name: 'account', type: 'address' }], name: 'balanceOf', outputs: [{ type: 'uint256' }], stateMutability: 'view', type: 'function' },
+] as const;
+
 function getChainIconUrl(chainId: number): string {
   return CHAIN_ICON_URLS[chainId] ?? `https://ethereum.org/favicon.ico`;
 }
@@ -37,6 +43,7 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [chainIconError, setChainIconError] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [hasStoredLenderDashboard, setHasStoredLenderDashboard] = useState(false);
 
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
@@ -60,6 +67,15 @@ export default function Navbar() {
     args: subnameTokenId !== undefined ? [subnameTokenId] : undefined,
     chainId: SEPOLIA_CHAIN_ID,
     query: { enabled: !!address && subnameTokenId !== undefined },
+  });
+
+  const { data: lenderVaultShares } = useReadContract({
+    address: TRECC_VAULT_ADDRESS,
+    abi: VAULT_BALANCE_ABI,
+    functionName: 'balanceOf',
+    args: address ? [address] : undefined,
+    chainId: SEPOLIA_CHAIN_ID,
+    query: { enabled: !!address },
   });
 
   const isSubnameVerifiedOnChain = !!address && !!treccLabel && onChainOwner?.toLowerCase() === address.toLowerCase();
@@ -87,6 +103,13 @@ export default function Navbar() {
   const displayAvatar = isDemo ? DEMO_AVATAR : (realEnsAvatar || randomAvatar);
   const roleParam = searchParams.get('role');
   const showWalletControls = pathname !== '/' || roleParam === 'lender' || roleParam === 'borrower';
+  const hasLenderDashboard = isConnected && (hasStoredLenderDashboard || (lenderVaultShares ?? 0n) > 0n);
+  const isLenderVaultPage = roleParam === 'lender' || pathname === '/capital-provider';
+  const showDashboardButton = hasLenderDashboard && isLenderVaultPage && pathname !== '/dashboard/lender';
+
+  useEffect(() => {
+    setHasStoredLenderDashboard(getLenderDashboardAccess(address));
+  }, [address, pathname]);
 
   useEffect(() => {
     if (!dropdownOpen) return;
@@ -135,6 +158,14 @@ export default function Navbar() {
 
         {/* Center: Simple Text Links */}
         <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 gap-10 items-center">
+          {showDashboardButton && (
+            <Link
+              href="/dashboard/lender"
+              className="text-sm font-medium text-zinc-300 hover:text-white transition-colors tracking-wide drop-shadow-md"
+            >
+              Dashboard
+            </Link>
+          )}
           <Link
             href="https://docs.trecc.finance/"
             target="_blank"
