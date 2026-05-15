@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
 import { Providers } from "./provider";
 import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
+import MobileGate from "../components/MobileGate";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,9 +22,12 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.className} bg-slate-950 text-white min-h-screen flex flex-col`}>
         <Providers>
-          <Navbar />
-          <main className="flex-grow flex flex-col pt-24">{children}</main>
-          <Footer />
+          <MobileGate>
+            <Suspense fallback={null}>
+              <Navbar />
+            </Suspense>
+            <main className="flex-grow flex flex-col">{children}</main>
+          </MobileGate>
         </Providers>
       </body>
     </html>

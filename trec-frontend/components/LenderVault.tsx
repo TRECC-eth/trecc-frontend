@@ -1,42 +1,24 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Wallet, ArrowDownCircle, Loader2, CheckCircle2, ChevronDown } from 'lucide-react';
-import { useReadContract, useWriteContract, useAccount } from 'wagmi';
+import React, { useState, useEffect } from 'react';
+import { Loader2, CheckCircle2, ArrowRight } from 'lucide-react';
+import { useReadContract, useWriteContract, useWaitForTransactionReceipt, useAccount } from 'wagmi';
 import { formatUnits, parseUnits } from 'viem';
+import { TRECC_VAULT_ADDRESS, USDC_ADDRESS } from '../constants/production-addresses';
+import { setLenderDashboardAccess } from '../lib/lender-dashboard-storage';
 
-// --- CONFIG ---
-const VAULT_ADDRESS = "0x64d02fa756D452B3022e8637aA3fe47b914Bd31c";
-const USDC_ADDRESS = "0x036CbD53842c5426634e7929541eC2318f3dCF7e";
+const SEPOLIA_CHAIN_ID = 11155111;
 
 const VAULT_ABI = [
-  { "inputs": [], "name": "totalPoolLiquidity", "outputs": [{ "type": "uint256" }], "stateMutability": "view", "type": "function" },
-  { "inputs": [{ "name": "_amount", "type": "uint256" }], "name": "depositLiquidity", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
-  { "inputs": [], "name": "stakeBond", "outputs": [], "stateMutability": "payable", "type": "function" }
+  { inputs: [], name: 'totalAssets', outputs: [{ type: 'uint256' }], stateMutability: 'view', type: 'function' },
+  { inputs: [{ name: 'assets', type: 'uint256' }, { name: 'receiver', type: 'address' }], name: 'deposit', outputs: [{ type: 'uint256' }], stateMutability: 'nonpayable', type: 'function' },
 ] as const;
 
 const ERC20_ABI = [
-  { "inputs": [{ "name": "spender", "type": "address" }, { "name": "amount", "type": "uint256" }], "name": "approve", "outputs": [{ "type": "bool" }], "stateMutability": "nonpayable", "type": "function" }
+  { inputs: [{ name: 'spender', type: 'address' }, { name: 'amount', type: 'uint256' }], name: 'approve', outputs: [{ type: 'bool' }], stateMutability: 'nonpayable', type: 'function' },
+  { inputs: [{ name: 'owner', type: 'address' }, { name: 'spender', type: 'address' }], name: 'allowance', outputs: [{ type: 'uint256' }], stateMutability: 'view', type: 'function' },
+  { inputs: [{ name: 'account', type: 'address' }], name: 'balanceOf', outputs: [{ type: 'uint256' }], stateMutability: 'view', type: 'function' },
 ] as const;
-
-// Token definitions with high-res icons
-type Token = { symbol: string; icon: string; isNative: boolean; decimals: number; color: string };
-const TOKENS: Token[] = [
-  {
-    symbol: 'USDC',
-    icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png',
-    isNative: false,
-    decimals: 6,
-    color: 'blue'
-  },
-  {
-    symbol: 'ETH',
-    icon: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png',
-    isNative: true,
-    decimals: 18,
-    color: 'white'
-  },
-];
 
 interface LenderVaultProps {
   onDepositSuccess?: () => void;
@@ -44,142 +26,285 @@ interface LenderVaultProps {
 
 export default function LenderVault({ onDepositSuccess }: LenderVaultProps) {
   const [amount, setAmount] = useState('');
-  const [selectedToken, setSelectedToken] = useState<Token>(TOKENS[0]);
-  const [showSelector, setShowSelector] = useState(false);
-  const [step, setStep] = useState<'idle' | 'approving' | 'processing' | 'success'>('idle');
-
+  const [step, setStep] = useState<'idle' | 'approving' | 'depositing' | 'success'>('idle');
+  const [walletMessage, setWalletMessage] = useState('');
   const { address } = useAccount();
 
-  const { data: vaultBalanceData, isLoading, isError, refetch } = useReadContract({
-    address: VAULT_ADDRESS,
+  const { data: tvlRaw, isLoading: tvlLoading, refetch: refetchTvl } = useReadContract({
+    address: TRECC_VAULT_ADDRESS,
     abi: VAULT_ABI,
-    functionName: 'totalPoolLiquidity',
+    functionName: 'totalAssets',
+    chainId: SEPOLIA_CHAIN_ID,
   });
 
-  const { writeContract: write } = useWriteContract();
+  const { data: usdcBalance } = useReadContract({
+    address: USDC_ADDRESS,
+    abi: ERC20_ABI,
+    functionName: 'balanceOf',
+    args: address ? [address] : undefined,
+    chainId: SEPOLIA_CHAIN_ID,
+    query: { enabled: !!address },
+  });
+
+  const { data: currentAllowance, refetch: refetchAllowance } = useReadContract({
+    address: USDC_ADDRESS,
+    abi: ERC20_ABI,
+    functionName: 'allowance',
+    args: address ? [address, TRECC_VAULT_ADDRESS] : undefined,
+    chainId: SEPOLIA_CHAIN_ID,
+    query: { enabled: !!address },
+  });
+
+  const { writeContract, data: txHash, reset: resetTx } = useWriteContract();
+
+  const { isSuccess: txConfirmed, isLoading: txPending } = useWaitForTransactionReceipt({
+    hash: txHash,
+  });
+
+  useEffect(() => {
+    if (!txConfirmed) return;
+
+    if (step === 'approving') {
+      refetchAllowance();
+      resetTx();
+      queueMicrotask(() => setStep('depositing'));
+      if (!address) return;
+      const rawAmount = parseUnits(amount, 6);
+      writeContract({
+        address: TRECC_VAULT_ADDRESS,
+        abi: VAULT_ABI,
+        functionName: 'deposit',
+        args: [rawAmount, address],
+        chainId: SEPOLIA_CHAIN_ID,
+      });
+    } else if (step === 'depositing') {
+      queueMicrotask(() => setStep('success'));
+      setLenderDashboardAccess(address);
+      refetchTvl();
+      onDepositSuccess?.();
+    }
+  }, [txConfirmed, step, address, amount, refetchAllowance, refetchTvl, resetTx, writeContract, onDepositSuccess]);
 
   const handleAction = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!amount || !address) return;
+    if (!amount || step !== 'idle') return;
 
-    const rawAmount = parseUnits(amount, selectedToken.decimals);
+    if (!address) {
+      setWalletMessage('Connect wallet to provide liquidity.');
+      return;
+    }
 
-    if (selectedToken.symbol === 'USDC') {
+    setWalletMessage('');
+
+    const rawAmount = parseUnits(amount, 6);
+    const needsApproval = !currentAllowance || currentAllowance < rawAmount;
+
+    if (needsApproval) {
       setStep('approving');
-      write({
+      writeContract({
         address: USDC_ADDRESS,
         abi: ERC20_ABI,
         functionName: 'approve',
-        args: [VAULT_ADDRESS, rawAmount],
-      }, {
-        onSuccess: () => {
-          setStep('processing');
-          setTimeout(() => {
-            write({
-              address: VAULT_ADDRESS,
-              abi: VAULT_ABI,
-              functionName: 'depositLiquidity',
-              args: [rawAmount],
-            }, {
-              onSuccess: () => { setStep('success'); refetch(); onDepositSuccess?.(); },
-              onError: () => setStep('idle')
-            });
-          }, 2000);
-        },
-        onError: () => setStep('idle')
+        args: [TRECC_VAULT_ADDRESS, rawAmount],
+        chainId: SEPOLIA_CHAIN_ID,
       });
     } else {
-      setStep('processing');
-      write({
-        address: VAULT_ADDRESS,
+      setStep('depositing');
+      writeContract({
+        address: TRECC_VAULT_ADDRESS,
         abi: VAULT_ABI,
-        functionName: 'stakeBond',
-        value: rawAmount,
-      }, {
-        onSuccess: () => { setStep('success'); onDepositSuccess?.(); },
-        onError: () => setStep('idle')
+        functionName: 'deposit',
+        args: [rawAmount, address],
+        chainId: SEPOLIA_CHAIN_ID,
       });
     }
   };
 
+  const tvl = tvlRaw !== undefined
+    ? Number(formatUnits(tvlRaw, 6)).toLocaleString(undefined, { maximumFractionDigits: 2 })
+    : '0';
+
+  const walletBalance = usdcBalance !== undefined
+    ? Number(formatUnits(usdcBalance, 6)).toLocaleString(undefined, { maximumFractionDigits: 2 })
+    : null;
+
+  const canSubmit = step === 'idle' && !!amount && Number(amount) > 0;
+  const isActive = step !== 'idle';
+
   return (
-    <div className="max-w-md mx-auto w-full space-y-4">
-
-      {/* TVL Display */}
-      <div className="bg-[#0a0a0a] p-6 rounded-2xl border border-white/5 flex justify-between items-center">
-        <div>
-          <p className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">Protocol TVL</p>
-          <p className="text-3xl font-mono font-bold text-white tracking-tighter">
-            {isLoading ? "..." : `$${vaultBalanceData !== undefined ? Number(formatUnits(vaultBalanceData, 6)).toLocaleString() : '0'}`}
-          </p>
-        </div>
-        <div className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full text-[10px] font-black tracking-tighter">
-          10% APY
-        </div>
-      </div>
-
-      <form onSubmit={handleAction} className="space-y-4">
-        <div className="relative group">
-          <input
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="0.00"
-            className="w-full bg-[#050505] border border-white/10 p-5 pl-12 pr-36 rounded-2xl text-white text-2xl placeholder-zinc-800 focus:outline-none focus:border-white/20 transition-all"
-            required
-          />
-          <Wallet className="absolute left-4 top-6 text-zinc-700" size={20} />
-
-          {/* Token Selector UI */}
-          <div className="absolute right-2 top-2 bottom-2 flex items-center">
-            <button
-              type="button"
-              onClick={() => setShowSelector(!showSelector)}
-              className="flex items-center gap-2 bg-zinc-900 border border-white/5 py-2 px-3 rounded-xl hover:bg-zinc-800 transition-colors"
-            >
-              <div className="relative w-6 h-6">
-                <div className={`absolute inset-0 bg-${selectedToken.color === 'blue' ? 'blue-500' : 'white'}/20 blur-sm rounded-full`} />
-                <img src={selectedToken.icon} alt={selectedToken.symbol} className="relative w-6 h-6 rounded-full object-contain" />
-              </div>
-              <span className="text-sm font-bold text-white">{selectedToken.symbol}</span>
-              <ChevronDown size={14} className={`text-zinc-600 transition-transform ${showSelector ? 'rotate-180' : ''}`} />
-            </button>
-
-            {showSelector && (
-              <div className="absolute top-full right-0 mt-2 w-40 bg-[#0f0f0f] border border-white/10 rounded-2xl overflow-hidden shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-200">
-                {TOKENS.map((t) => (
-                  <button
-                    key={t.symbol}
-                    type="button"
-                    className={`w-full flex items-center gap-3 p-4 hover:bg-white/5 text-sm transition-colors ${selectedToken.symbol === t.symbol ? 'bg-white/5 text-white' : 'text-zinc-500'}`}
-                    onClick={() => { setSelectedToken(t); setShowSelector(false); }}
-                  >
-                    <img src={t.icon} alt="" className="w-5 h-5 rounded-full" />
-                    <span className="font-bold">{t.symbol}</span>
-                  </button>
+    <form
+      onSubmit={handleAction}
+      className="
+        w-full rounded-2xl border border-white/[0.08]
+        bg-[linear-gradient(160deg,#151517_0%,#050505_55%,#101014_100%)]
+        p-4 md:p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_20px_45px_-24px_rgba(0,0,0,1)]
+      "
+    >
+      <div className="flex flex-col gap-4">
+        {/* TVL stat */}
+        <div className="
+          w-full md:w-fit min-w-[220px] rounded-2xl border border-white/[0.08]
+          bg-black/45 px-5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]
+        ">
+          <span className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+            Protocol TVL
+          </span>
+          <span className="mt-2 block text-2xl font-semibold tracking-tight text-zinc-100 tabular-nums">
+            {tvlLoading ? (
+              <span className="inline-flex gap-1">
+                {[0, 1, 2].map((i) => (
+                  <span
+                    key={i}
+                    className="w-1.5 h-1.5 rounded-full bg-zinc-500 animate-bounce"
+                    style={{ animationDelay: `${i * 0.15}s` }}
+                  />
                 ))}
-              </div>
+              </span>
+            ) : `$${tvl}`}
+          </span>
+          <span className="mt-1 block text-xs text-zinc-600">
+            Total USDC supplied
+          </span>
+        </div>
+
+        {/* Amount input */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between mb-2 px-1">
+            <label className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500">Amount</label>
+            {walletBalance && (
+              <button
+                type="button"
+                onClick={() => usdcBalance && setAmount(formatUnits(usdcBalance, 6))}
+                className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+              >
+                Balance {walletBalance} USDC
+              </button>
             )}
+          </div>
+          <div className="relative flex items-center rounded-2xl bg-black/50 border border-white/[0.08] focus-within:border-zinc-500/70 focus-within:bg-black/70 transition-colors">
+            <input
+              type="text"
+              inputMode="decimal"
+              pattern="[0-9]*\.?[0-9]*"
+              value={amount}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                  setAmount(val);
+                  setWalletMessage('');
+                }
+              }}
+              placeholder="0.00"
+              className="
+                flex-1 min-w-0 bg-transparent py-4 px-5 text-2xl font-medium text-zinc-100
+                placeholder-zinc-700 tabular-nums tracking-tight
+                focus:outline-none
+              "
+              required
+            />
+            <div className="pr-4 flex items-center gap-2">
+              <img
+                src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png"
+                alt="USDC"
+                className="w-5 h-5 rounded-full"
+              />
+              <span className="text-sm font-semibold text-zinc-400">USDC</span>
+            </div>
           </div>
         </div>
 
+        {walletMessage && (
+          <div className="rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-2.5 text-sm font-medium text-zinc-300">
+            {walletMessage}
+          </div>
+        )}
+
+        {isActive && <TransactionProgress step={step} />}
+
+        {/* Submit */}
         <button
           type="submit"
-          disabled={step !== 'idle' || !amount}
-          className="w-full bg-white text-black py-5 rounded-2xl font-black uppercase text-xs tracking-widest flex justify-center items-center gap-2 hover:bg-zinc-200 disabled:opacity-30 transition-all active:scale-[0.98]"
+          disabled={!canSubmit}
+          className="
+            w-full py-3.5 rounded-2xl text-sm font-semibold tracking-normal
+            bg-zinc-100 text-zinc-950
+            border border-white/10
+            shadow-[0_14px_30px_-18px_rgba(255,255,255,0.5)]
+            hover:bg-white
+            active:scale-[0.99]
+            disabled:bg-zinc-800/70 disabled:text-zinc-500 disabled:border-white/[0.06] disabled:shadow-none disabled:cursor-not-allowed
+            transition-all duration-200
+            flex items-center justify-center gap-2
+          "
         >
-          {step === 'approving' && <><Loader2 className="animate-spin" size={16} /> Approving...</>}
-          {step === 'processing' && <><Loader2 className="animate-spin" size={16} /> Confirming...</>}
-          {step === 'success' && <><CheckCircle2 size={16} /> Success</>}
+          {step === 'approving' && <><Loader2 className="animate-spin" size={16} /> {txPending ? 'Confirming approval…' : 'Approve in wallet…'}</>}
+          {step === 'depositing' && <><Loader2 className="animate-spin" size={16} /> {txPending ? 'Confirming deposit…' : 'Confirm in wallet…'}</>}
+          {step === 'success' && <><CheckCircle2 size={16} /> Deposit successful</>}
           {step === 'idle' && (
-            selectedToken.symbol === 'USDC' ? <><ArrowDownCircle size={16} /> Provide Liquidity</> : <><ArrowDownCircle size={16} /> Stake Bond</>
+            <>
+              Provide Liquidity
+              <ArrowRight size={16} />
+            </>
           )}
         </button>
-      </form>
+      </div>
+    </form>
+  );
+}
 
-      <p className="text-[9px] text-center text-zinc-700 font-mono tracking-widest uppercase">
-        Verified On-Chain Interaction
-      </p>
+function TransactionProgress({ step }: { step: 'approving' | 'depositing' | 'success' }) {
+  const stages = [
+    { key: 'approving', label: 'Approve' },
+    { key: 'depositing', label: 'Deposit' },
+    { key: 'success', label: 'Done' },
+  ] as const;
+  const currentIndex = stages.findIndex((stage) => stage.key === step);
+  const progressRatio = step === 'success' ? 1 : currentIndex === 1 ? 0.5 : 0;
+
+  return (
+    <div className="rounded-2xl border border-white/[0.08] bg-black/35 px-4 py-4">
+      <div className="relative">
+        <div className="absolute left-5 right-5 top-4 h-px bg-zinc-800" />
+        <div
+          className="absolute left-5 top-4 h-px bg-zinc-300 transition-all duration-700 ease-out"
+          style={{ width: `calc((100% - 2.5rem) * ${progressRatio})` }}
+        />
+
+        <div className="relative z-10 grid grid-cols-3">
+          {stages.map((stage, index) => {
+            const done = index < currentIndex || step === 'success';
+            const active = index === currentIndex && step !== 'success';
+
+            return (
+              <div
+                key={stage.key}
+                className={`flex flex-col gap-2 ${index === 0 ? 'items-start' : index === 1 ? 'items-center' : 'items-end'}`}
+              >
+                <div
+                  className={`
+                    flex h-8 w-8 items-center justify-center rounded-full border text-xs font-semibold transition-all duration-300
+                    ${done
+                      ? 'border-zinc-200 bg-zinc-100 text-zinc-950'
+                      : active
+                        ? 'border-zinc-300 bg-zinc-900 text-zinc-100 shadow-[0_0_20px_rgba(255,255,255,0.12)]'
+                        : 'border-zinc-800 bg-zinc-950 text-zinc-600'}
+                  `}
+                >
+                  {done ? <CheckCircle2 size={15} /> : index + 1}
+                </div>
+                <span
+                  className={`
+                    text-[11px] font-medium transition-colors duration-300
+                    ${done || active ? 'text-zinc-300' : 'text-zinc-600'}
+                  `}
+                >
+                  {stage.label}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }

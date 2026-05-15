@@ -66,36 +66,9 @@ export default function BorrowerDashboard() {
     }
   }, [aiStatus]);
 
-  // --- BITGO MPC EXECUTION WIRING ---
   const handleApproveTrade = async () => {
     setAiStatus('executing');
-    
-    try {
-      const response = await fetch('/api/bitgo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          to: "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD", 
-          value: "0",
-          data: "0x" 
-        })
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        console.log("Boom! Transaction Hash:", data.txHash);
-        setAiStatus('monitoring'); 
-      } else {
-        console.error("Execution Blocked:", data.error);
-        alert(`AI Execution Failed: ${data.error}`);
-        setAiStatus('opportunity'); 
-      }
-    } catch (error) {
-      console.error("Network error:", error);
-      alert("Failed to connect to the TREC BitGo Server.");
-      setAiStatus('opportunity');
-    }
+    setTimeout(() => setAiStatus('monitoring'), 2000);
   };
 
   return (
@@ -107,7 +80,7 @@ export default function BorrowerDashboard() {
           <h2 className="text-2xl font-bold text-white flex items-center gap-2">
             <Bot className="text-emerald-400" /> Sky's Trading Agent
           </h2>
-          <p className="text-slate-400 text-sm mt-1">ERC-8004 Identity Verified • BitGo MPC Vault Active</p>
+          <p className="text-slate-400 text-sm mt-1">ERC-8004 Identity Verified</p>
         </div>
         <div className="text-right">
           <p className="text-sm text-slate-500 font-bold uppercase tracking-wider">Credit Score</p>
@@ -329,7 +302,7 @@ export default function BorrowerDashboard() {
             {aiStatus === 'executing' && (
               <div className="text-center space-y-4">
                 <div className="w-12 h-12 rounded-full border-t-2 border-r-2 border-emerald-500 animate-spin mx-auto" />
-                <p className="text-emerald-400 text-sm font-medium">BitGo MPC Wallet Signing Transaction...</p>
+                <p className="text-emerald-400 text-sm font-medium">Signing Transaction...</p>
               </div>
             )}
 
