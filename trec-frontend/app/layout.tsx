@@ -12,7 +12,12 @@ export const metadata: Metadata = {
   title: "TRECC",
   description: "Trustless Reputation & Evaluation Credit",
   icons: {
-    icon: "/favicon.png",
+    icon: [
+      { url: "/favicon.png?v=trecc-2", type: "image/png" },
+      { url: "/favicon.ico?v=trecc-2", type: "image/x-icon" },
+    ],
+    shortcut: "/favicon.ico?v=trecc-2",
+    apple: "/favicon.png?v=trecc-2",
   },
 };
 
@@ -23,6 +28,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" href="/favicon.png?v=trecc-2" type="image/png" />
+        <link rel="shortcut icon" href="/favicon.ico?v=trecc-2" />
+        <link rel="apple-touch-icon" href="/favicon.png?v=trecc-2" />
+      </head>
       <body className={`${inter.className} bg-slate-950 text-white min-h-screen flex flex-col`}>
         <Providers>
           <MobileGate>
