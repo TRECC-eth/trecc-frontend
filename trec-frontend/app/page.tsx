@@ -56,12 +56,10 @@ function HomeContent() {
       return;
     }
 
-    setRole(r);
-    router.replace(`/?role=${r}`, { scroll: false });
-    if (r === 'borrower') {
-      setIsInitializing(true);
-      setBootText('Initializing...');
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('trecc:borrower:fresh-wallet', 'true');
     }
+    router.push('/kyc');
   }, [router]);
 
   useEffect(() => {
@@ -75,9 +73,9 @@ function HomeContent() {
       router.replace('/lender-page');
       return;
     }
-    if (roleParam === 'borrower' && role !== 'borrower') {
-      setRole('borrower');
-      setIsInitializing(false);
+    if (roleParam === 'borrower') {
+      sessionStorage.setItem('trecc:borrower:fresh-wallet', 'true');
+      router.replace('/kyc');
     }
   }, [mounted, role, router, searchParams]);
 

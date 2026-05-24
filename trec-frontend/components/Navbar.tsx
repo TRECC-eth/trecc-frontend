@@ -17,6 +17,7 @@ import {
 import { NAME_WRAPPER_ABI } from '../constants/abi/nameWrapperAbi';
 import { getStoredTreccUsername } from '../lib/ens-storage';
 import { getLenderDashboardAccess } from '../lib/lender-dashboard-storage';
+import { getAgentDashboardAccess } from '../lib/agent-dashboard-storage';
 import { TRECC_VAULT_ADDRESS } from '../constants/production-addresses';
 
 // --- CONFIG: PASTE YOUR WALLET ADDRESS HERE FOR THE DEMO ---
@@ -44,6 +45,7 @@ export default function Navbar() {
   const [chainIconError, setChainIconError] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [hasStoredLenderDashboard, setHasStoredLenderDashboard] = useState(false);
+  const [hasStoredAgentDashboard, setHasStoredAgentDashboard] = useState(false);
 
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
@@ -104,11 +106,16 @@ export default function Navbar() {
   const roleParam = searchParams.get('role');
   const showWalletControls = pathname !== '/' || roleParam === 'lender' || roleParam === 'borrower';
   const hasLenderDashboard = isConnected && (hasStoredLenderDashboard || (lenderVaultShares ?? BigInt(0)) > BigInt(0));
+  const hasAgentDashboard = isConnected && hasStoredAgentDashboard;
   const isLenderVaultPage = roleParam === 'lender' || pathname === '/capital-provider';
-  const showDashboardButton = hasLenderDashboard && isLenderVaultPage && pathname !== '/dashboard/lender';
+  const showLenderDashboardButton = hasLenderDashboard && isLenderVaultPage && pathname !== '/dashboard/lender';
+  const showAgentDashboardButton = hasAgentDashboard && pathname !== '/dashboard/borrower';
+  const dashboardHref = showLenderDashboardButton ? '/dashboard/lender' : '/dashboard/borrower';
+  const showDashboardButton = showLenderDashboardButton || showAgentDashboardButton;
 
   useEffect(() => {
     setHasStoredLenderDashboard(getLenderDashboardAccess(address));
+    setHasStoredAgentDashboard(getAgentDashboardAccess(address));
   }, [address, pathname]);
 
   useEffect(() => {
@@ -160,7 +167,7 @@ export default function Navbar() {
         <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 gap-10 items-center">
           {showDashboardButton && (
             <Link
-              href="/dashboard/lender"
+              href={dashboardHref}
               className="text-sm font-medium text-zinc-300 hover:text-white transition-colors tracking-wide drop-shadow-md"
             >
               Dashboard
