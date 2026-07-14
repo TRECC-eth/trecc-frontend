@@ -27,6 +27,10 @@ export default function BorrowerGate({ children }: BorrowerGateProps) {
   const [docNumber, setDocNumber] = useState('');
   const [email, setEmail] = useState('');
 
+  // 🟢 Toggle this to TRUE for the demo video. 
+  // It completely bypasses the gate and renders the dashboard immediately.
+  const DEMO_MODE = true; 
+
   useEffect(() => {
     if (!address) {
       setKycLoading(false);
@@ -75,7 +79,8 @@ export default function BorrowerGate({ children }: BorrowerGateProps) {
     [address, fullName, email, dob, country, docType, docNumber, router]
   );
 
-  if (!isConnected || !address) {
+  // If DEMO_MODE is true, skip straight to rendering {children}
+  if (!DEMO_MODE && (!isConnected || !address)) {
     return (
       <div className="w-full max-w-md mx-auto py-16 px-4 text-center">
         <div
@@ -124,7 +129,7 @@ export default function BorrowerGate({ children }: BorrowerGateProps) {
     );
   }
 
-  if (kycLoading) {
+  if (!DEMO_MODE && kycLoading) {
     return (
       <div className="w-full max-w-md mx-auto py-16 px-4 flex justify-center">
         <Loader2 className="w-6 h-6 animate-spin text-zinc-500" />
@@ -132,7 +137,7 @@ export default function BorrowerGate({ children }: BorrowerGateProps) {
     );
   }
 
-  if (!kycVerified) {
+  if (!DEMO_MODE && !kycVerified) {
     return (
       <div className="w-full max-w-xl mx-auto py-12 px-4">
         <div
@@ -294,5 +299,6 @@ export default function BorrowerGate({ children }: BorrowerGateProps) {
     );
   }
 
+  // Will render immediately when DEMO_MODE is true
   return <>{children}</>;
 }
