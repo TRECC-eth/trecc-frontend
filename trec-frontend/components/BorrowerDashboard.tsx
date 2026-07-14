@@ -75,11 +75,11 @@ type AgentProfileTuple = readonly [Address, Address, Address, bigint, boolean, b
 const AGENT_NFTS: AgentNft[] = [
   {
     id: 'agent-742',
-    name: 'Elsa Prime',
+    name: 'sky',
     tokenId: '#742',
     safeAddress: '0xc1b5...ff41',
-    borrowed: 10000,
-    collateral: 3000,
+    borrowed: 4000,
+    collateral: 447.5,
     pnlPercent: '+4.8%',
     protocols: [
       { name: 'Aave V3', share: 45, logo: '/aave.png', color: '#d8d8d8', apy: '5.2%', status: 'Active' },
@@ -92,8 +92,8 @@ const AGENT_NFTS: AgentNft[] = [
     name: 'Delta Neutral',
     tokenId: '#815',
     safeAddress: '0x8f21...91c4',
-    borrowed: 7200,
-    collateral: 2400,
+    borrowed: 2000,
+    collateral: 117.5,
     pnlPercent: '+3.1%',
     protocols: [
       { name: 'Aave V3', share: 25, logo: '/aave.png', color: '#d8d8d8', apy: '5.2%', status: 'Watching' },
@@ -106,8 +106,8 @@ const AGENT_NFTS: AgentNft[] = [
     name: 'Basis Scout',
     tokenId: '#903',
     safeAddress: '0xb62d...0a19',
-    borrowed: 12800,
-    collateral: 4100,
+    borrowed: 3500,
+    collateral: 380,
     pnlPercent: '+2.4%',
     protocols: [
       { name: 'Aave V3', share: 35, logo: '/aave.png', color: '#d8d8d8', apy: '5.2%', status: 'Active' },
