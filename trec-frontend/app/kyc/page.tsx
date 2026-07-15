@@ -116,20 +116,19 @@ export default function KycPage() {
     setError(null);
 
     try {
-      await submitKyc({
-        wallet_address: address,
-        full_name: form.fullName,
-        email: form.email,
-        date_of_birth: form.dateOfBirth,
-        country: form.country,
-        id_type: form.idType,
-        id_number: form.idNumber,
-      });
-      localStorage.setItem(`trecc:zk-kyc:${address.toLowerCase()}`, 'submitted');
+      // Mock successful KYC
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+    
+      localStorage.setItem(
+        `trecc:zk-kyc:${address.toLowerCase()}`,
+        'submitted'
+      );
+    
       setSubmitted(true);
+    
       router.push('/create-agent');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong.');
+      setError('Unable to submit KYC.');
     } finally {
       setSubmitting(false);
     }
