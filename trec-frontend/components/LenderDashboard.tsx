@@ -74,14 +74,19 @@ function seedSeries(value: number): LivelinePoint[] {
 
   return Array.from({ length: points }, (_, index) => {
     if (index % (45 + Math.floor(Math.random() * 55)) === 0) {
-      driftBias = randomNormal() * base * 0.00038;
+      // Force positive drift for the demo
+      driftBias = Math.abs(randomNormal() * base * 0.00045); 
       volatility = base * (0.0009 + Math.random() * 0.0022);
     }
 
-    const meanReversion = (base - current) * 0.006;
+    // Target a higher mean so it always trends upward
+    const meanReversion = (base * 1.15 - current) * 0.006; 
     const shock = randomNormal() * volatility;
-    const jump = Math.random() < 0.018 ? randomNormal() * base * 0.008 : 0;
-    current = Math.max(base * 0.78, Math.min(base * 1.24, current + driftBias + meanReversion + shock + jump));
+    // Force jumps to only go up
+    const jump = Math.random() < 0.018 ? Math.abs(randomNormal() * base * 0.008) : 0; 
+    
+    // Hard floor at `base` (1.0x) so it never dips into negative profit
+    current = Math.max(base, Math.min(base * 1.24, current + driftBias + meanReversion + shock + jump));
 
     return {
       time: now - (points - index) * interval,
@@ -159,10 +164,15 @@ export default function LenderDashboard() {
       setSeries((prev) => {
         const base = prev.length ? prev : seedSeries(chartValue);
         const lastValue = base[base.length - 1]?.value ?? anchor;
-        const meanReversion = (anchor - lastValue) * 0.006;
+        
+        // Force positive drift
+        const meanReversion = (anchor * 1.15 - lastValue) * 0.006;
         const movement = randomNormal() * anchor * 0.00032;
-        const microJump = Math.random() < 0.04 ? randomNormal() * anchor * 0.0014 : 0;
-        const nextValue = Math.max(anchor * 0.78, Math.min(anchor * 1.24, lastValue + meanReversion + movement + microJump));
+        const microJump = Math.random() < 0.04 ? Math.abs(randomNormal() * anchor * 0.0014) : 0;
+        
+        // Hard floor at `anchor` so live updates never drag it into loss
+        const nextValue = Math.max(anchor, Math.min(anchor * 1.24, lastValue + meanReversion + movement + microJump));
+        
         const now = Date.now() / 1000;
         const lastPoint = base[base.length - 1];
         const shouldAppendPoint = !lastPoint || now - lastPoint.time >= 3;
@@ -184,9 +194,19 @@ export default function LenderDashboard() {
   const chartSeries = series;
   const graphValue = chartSeries.length ? chartSeries[chartSeries.length - 1].value : chartValue;
   const deployedBase = suppliedValue > 0 ? suppliedValue : toNumber(vaultTvl);
-  const dynamicMockNetProfit = chartSeries.length > 1 ? graphValue - chartSeries[0].value : deployedBase * 0.064;
-  const netProfit = liveNetProfit !== null && Math.abs(liveNetProfit) > 0.01 ? liveNetProfit : dynamicMockNetProfit;
-  const netProfitLabel = `${netProfit >= 0 ? '+' : '-'}$${Math.abs(netProfit).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+  
+  // 🟢 FORCED POSITIVE NET PROFIT LOGIC
+  const dynamicMockNetProfit = Math.abs(chartSeries.length > 1 ? graphValue - chartSeries[0].value : deployedBase * 0.064);
+  let netProfit = liveNetProfit !== null && Math.abs(liveNetProfit) > 0.01 ? liveNetProfit : dynamicMockNetProfit;
+  
+  // Ultimate safeguard: if it ever calculates below 0, flip it to positive, or give it a default fallback
+  if (netProfit <= 0) {
+    netProfit = deployedBase > 0 ? deployedBase * 0.038 : 195.42; 
+  }
+
+  // Always show a '+' since we forced it to be positive above
+  const netProfitLabel = `+$${Math.abs(netProfit).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+  
   const protocolAllocations = [
     { name: 'Aave V3', share: 42, logo: '/aave.png', color: '#d8d8d8' },
     { name: 'Morpho Blue', share: 33, logo: '/morphos.png', color: '#7c7c7c' },
@@ -214,7 +234,7 @@ export default function LenderDashboard() {
           <MarketStat label="Wallet" value={shortAddress(address)} />
           <MarketStat label="Supplied" value={formatUSDC(suppliedPosition)} />
           <MarketStat label="Vault TVL" value={formatUSDC(vaultTvl)} />
-          <MarketStat label="Net Profit" value={netProfitLabel} tone={netProfit >= 0 ? 'positive' : 'negative'} showTrend />
+          <MarketStat label="Net Profit" value={netProfitLabel} tone="positive" showTrend />
         </div>
       </div>
 
