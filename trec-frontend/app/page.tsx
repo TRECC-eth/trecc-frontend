@@ -7,12 +7,17 @@ import AgentRegistry from '../components/AgentRegistry';
 import LenderVault from '../components/LenderVault';
 import ElsaChat from '../components/ElsaChat';
 import BorrowerGate from '../components/BorrowerGate';
+// 1. IMPORT THE GATEWAY HERE
+import BetaGate from '../components/BetaGate'; 
 
 export default function Home() {
   return (
-    <Suspense fallback={null}>
-      <HomeContent />
-    </Suspense>
+    // 2. WRAP YOUR ENTIRE APP IN THE GATEWAY
+    <BetaGate>
+      <Suspense fallback={null}>
+        <HomeContent />
+      </Suspense>
+    </BetaGate>
   );
 }
 
