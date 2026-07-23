@@ -1,7 +1,12 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Lock, ArrowRight, ShieldAlert } from 'lucide-react';
 
-export default function BetaGate({ children }) {
+// 1. Added TypeScript interface for the props to prevent Vercel errors
+interface BetaGateProps {
+  children: React.ReactNode;
+}
+
+export default function BetaGate({ children }: BetaGateProps) {
   const [accessCode, setAccessCode] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [error, setError] = useState(false);
@@ -9,7 +14,8 @@ export default function BetaGate({ children }) {
   // The secret code you give to your VCs and beta testers
   const SECRET_CODE = "treccbeta5099"; 
 
-  const handleLogin = (e) => {
+  // 2. Added TypeScript type for the form event
+  const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (accessCode === SECRET_CODE) {
       setIsAuthenticated(true);
@@ -88,6 +94,12 @@ export default function BetaGate({ children }) {
         </form>
 
       </div>
+      
+      {/* Footer Branding */}
+      <div className="absolute bottom-8 text-zinc-600 font-mono text-[10px] uppercase tracking-[0.2em]">
+        TRECC Infrastructure // Base Sepolia
+      </div>
+
     </div>
   );
 }
