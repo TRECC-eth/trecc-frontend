@@ -94,12 +94,6 @@ export default function BetaGate({ children }: BetaGateProps) {
         </form>
 
       </div>
-      
-      {/* Footer Branding */}
-      <div className="absolute bottom-8 text-zinc-600 font-mono text-[10px] uppercase tracking-[0.2em]">
-        TRECC Infrastructure // Base Sepolia
-      </div>
-
     </div>
   );
 }
