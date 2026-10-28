@@ -2,12 +2,14 @@
 
 import React, { useState } from 'react';
 import { Wallet, ArrowDownCircle, Loader2, CheckCircle2, ChevronDown } from 'lucide-react';
-import { useReadContract, useWriteContract, useAccount } from 'wagmi';
+import { useReadContract, useWriteContract, useAccount, useSwitchChain } from 'wagmi';
 import { formatUnits, parseUnits } from 'viem';
+import { baseSepolia } from 'wagmi/chains';
 
 // --- CONFIG ---
 const VAULT_ADDRESS = "0x64d02fa756D452B3022e8637aA3fe47b914Bd31c";
-const USDC_ADDRESS = "0x036CbD53842c5426634e7929541eC2318f3dCF7e";
+const USDC_ADDRESS = "0x036CbD53842c5426634e7929541eC2318f3dCF7e"; 
+const TARGET_CHAIN_ID = baseSepolia.id; // 84532
 
 const VAULT_ABI = [
   { "inputs": [], "name": "totalPoolLiquidity", "outputs": [{ "type": "uint256" }], "stateMutability": "view", "type": "function" },
@@ -19,7 +21,6 @@ const ERC20_ABI = [
   { "inputs": [{ "name": "spender", "type": "address" }, { "name": "amount", "type": "uint256" }], "name": "approve", "outputs": [{ "type": "bool" }], "stateMutability": "nonpayable", "type": "function" }
 ] as const;
 
-// Token definitions with high-res icons
 type Token = { symbol: string; icon: string; isNative: boolean; decimals: number; color: string };
 const TOKENS: Token[] = [
   {
@@ -48,12 +49,15 @@ export default function LenderVault({ onDepositSuccess }: LenderVaultProps) {
   const [showSelector, setShowSelector] = useState(false);
   const [step, setStep] = useState<'idle' | 'approving' | 'processing' | 'success'>('idle');
 
-  const { address } = useAccount();
+  const { address, chainId } = useAccount();
+  const { switchChain } = useSwitchChain();
 
-  const { data: vaultBalanceData, isLoading, isError, refetch } = useReadContract({
+  // 1. Read TVL - Explicitly from Base Sepolia
+  const { data: vaultBalanceData, isLoading, refetch } = useReadContract({
     address: VAULT_ADDRESS,
     abi: VAULT_ABI,
     functionName: 'totalPoolLiquidity',
+    chainId: TARGET_CHAIN_ID,
   });
 
   const { writeContract: write } = useWriteContract();
@@ -61,6 +65,12 @@ export default function LenderVault({ onDepositSuccess }: LenderVaultProps) {
   const handleAction = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount || !address) return;
+
+    // Check if user is on the wrong network
+    if (chainId !== TARGET_CHAIN_ID) {
+      switchChain({ chainId: TARGET_CHAIN_ID });
+      return;
+    }
 
     const rawAmount = parseUnits(amount, selectedToken.decimals);
 
@@ -71,6 +81,7 @@ export default function LenderVault({ onDepositSuccess }: LenderVaultProps) {
         abi: ERC20_ABI,
         functionName: 'approve',
         args: [VAULT_ADDRESS, rawAmount],
+        chainId: TARGET_CHAIN_ID, // Force Testnet
       }, {
         onSuccess: () => {
           setStep('processing');
@@ -80,11 +91,17 @@ export default function LenderVault({ onDepositSuccess }: LenderVaultProps) {
               abi: VAULT_ABI,
               functionName: 'depositLiquidity',
               args: [rawAmount],
+              chainId: TARGET_CHAIN_ID, // Force Testnet
             }, {
-              onSuccess: () => { setStep('success'); refetch(); onDepositSuccess?.(); },
+              onSuccess: () => { 
+                setStep('success'); 
+                refetch(); 
+                onDepositSuccess?.(); 
+                setTimeout(() => setStep('idle'), 5000);
+              },
               onError: () => setStep('idle')
             });
-          }, 2000);
+          }, 1500);
         },
         onError: () => setStep('idle')
       });
@@ -95,8 +112,13 @@ export default function LenderVault({ onDepositSuccess }: LenderVaultProps) {
         abi: VAULT_ABI,
         functionName: 'stakeBond',
         value: rawAmount,
+        chainId: TARGET_CHAIN_ID, // Force Testnet
       }, {
-        onSuccess: () => { setStep('success'); onDepositSuccess?.(); },
+        onSuccess: () => { 
+          setStep('success'); 
+          onDepositSuccess?.(); 
+          setTimeout(() => setStep('idle'), 5000);
+        },
         onError: () => setStep('idle')
       });
     }
@@ -104,7 +126,6 @@ export default function LenderVault({ onDepositSuccess }: LenderVaultProps) {
 
   return (
     <div className="max-w-md mx-auto w-full space-y-4">
-
       {/* TVL Display */}
       <div className="bg-[#0a0a0a] p-6 rounded-2xl border border-white/5 flex justify-between items-center">
         <div>
@@ -130,7 +151,6 @@ export default function LenderVault({ onDepositSuccess }: LenderVaultProps) {
           />
           <Wallet className="absolute left-4 top-6 text-zinc-700" size={20} />
 
-          {/* Token Selector UI */}
           <div className="absolute right-2 top-2 bottom-2 flex items-center">
             <button
               type="button"
@@ -168,17 +188,21 @@ export default function LenderVault({ onDepositSuccess }: LenderVaultProps) {
           disabled={step !== 'idle' || !amount}
           className="w-full bg-white text-black py-5 rounded-2xl font-black uppercase text-xs tracking-widest flex justify-center items-center gap-2 hover:bg-zinc-200 disabled:opacity-30 transition-all active:scale-[0.98]"
         >
-          {step === 'approving' && <><Loader2 className="animate-spin" size={16} /> Approving...</>}
-          {step === 'processing' && <><Loader2 className="animate-spin" size={16} /> Confirming...</>}
-          {step === 'success' && <><CheckCircle2 size={16} /> Success</>}
-          {step === 'idle' && (
-            selectedToken.symbol === 'USDC' ? <><ArrowDownCircle size={16} /> Provide Liquidity</> : <><ArrowDownCircle size={16} /> Stake Bond</>
+          {chainId !== TARGET_CHAIN_ID ? "Switch to Base Sepolia" : (
+            <>
+              {step === 'approving' && <><Loader2 className="animate-spin" size={16} /> Approving...</>}
+              {step === 'processing' && <><Loader2 className="animate-spin" size={16} /> Confirming...</>}
+              {step === 'success' && <><CheckCircle2 size={16} /> Success</>}
+              {step === 'idle' && (
+                selectedToken.symbol === 'USDC' ? <><ArrowDownCircle size={16} /> Provide Liquidity</> : <><ArrowDownCircle size={16} /> Stake Bond</>
+              )}
+            </>
           )}
         </button>
       </form>
 
       <p className="text-[9px] text-center text-zinc-700 font-mono tracking-widest uppercase">
-        Verified On-Chain Interaction
+        Network: Base Sepolia (84532)
       </p>
     </div>
   );
